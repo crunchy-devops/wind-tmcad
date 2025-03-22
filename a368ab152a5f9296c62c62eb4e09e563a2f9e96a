@@ -1,0 +1,1 @@
+ Prompt Develop a web server using Python Flask and Plotly to visually display the point cloud dataset, showing each Point3D's Z value and ID directly on the screen.
