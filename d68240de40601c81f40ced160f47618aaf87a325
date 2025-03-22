@@ -1,0 +1,2 @@
+Generate  a Python class PointCloud containing a set of Point3d, with unique id, and basic geometric function, length between 2 points selected by ids, slope in percentage, bearing angle, spatial indexing KDtree or OCtree, Point Cloud Data Compression:Implement an efficient storage strategy for terrain models (e.g., using NumPy structured arrays or HDF5)
+ adhere to PEP8, dockstrings, and annotations, use __all__ and __slots__, write test coverage at 80% and benchmark as well
