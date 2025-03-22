@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Point Cloud Visualization</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #plot {
+            width: 100%;
+            height: 80vh;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+        .error {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .retry-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .retry-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Point Cloud Visualization</h1>
+        <div id="plot">
+            <div class="loading">Loading plot...</div>
+        </div>
+    </div>
+    <script>
+        function loadPlot() {
+            const plotDiv = document.getElementById('plot');
+            plotDiv.innerHTML = '<div class="loading">Loading plot...</div>';
+            
+            fetch('/get_plot_data')
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Failed to load plot data');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(figure => {
+                    // Create the plot
+                    Plotly.newPlot('plot', figure.data, figure.layout, {
+                        responsive: true,
+                        displayModeBar: true,
+                        modeBarButtonsToRemove: ['sendDataToCloud'],
+                        displaylogo: false
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading plot:', error);
+                    plotDiv.innerHTML = `
+                        <div class="error">
+                            Error loading plot: ${error.message}
+                            <br>
+                            <button class="retry-button" onclick="loadPlot()">Retry</button>
+                        </div>
+                    `;
+                });
+        }
+        
+        // Initial load
+        loadPlot();
+    </script>
+</body>
+</html>
