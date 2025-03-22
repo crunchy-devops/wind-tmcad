@@ -1,0 +1,1 @@
+Generate  a class Point3d containing a long id unique, x ,y ,z as float , use struct package for optimized memory footprint, adhere to PEP8, dockstrings, and annotations, use __all__ and __slots__, write test coverage at 80% and benchmark as well
