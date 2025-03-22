@@ -1,7 +1,7 @@
 """Module providing a memory-efficient Point Cloud implementation with spatial indexing."""
 from typing import Dict, List, Optional, Tuple, Set
 import numpy as np
-from scipy.spatial import cKDTree
+from scipy.spatial import cKDTree, Delaunay
 import h5py
 import math
 from point3d import Point3d
@@ -17,15 +17,17 @@ class PointCloud:
         points (Dict[int, Point3d]): Dictionary mapping point IDs to Point3d objects
         _kdtree (cKDTree): Spatial index for efficient nearest neighbor queries
         _coords_array (np.ndarray): Numpy array of point coordinates for KD-tree
+        _triangulation: Delaunay triangulation of the point cloud
     """
     
-    __slots__ = ['points', '_kdtree', '_coords_array']
+    __slots__ = ['points', '_kdtree', '_coords_array', '_triangulation']
     
     def __init__(self):
         """Initialize an empty point cloud."""
         self.points: Dict[int, Point3d] = {}
         self._kdtree: Optional[cKDTree] = None
         self._coords_array: Optional[np.ndarray] = None
+        self._triangulation = None
         
     def add_point(self, point: Point3d) -> None:
         """Add a point to the cloud.
@@ -142,9 +144,119 @@ class PointCloud:
         self._kdtree = cKDTree(self._coords_array)
     
     def _invalidate_index(self) -> None:
-        """Invalidate spatial index when points are modified."""
+        """Invalidate spatial index and triangulation."""
         self._kdtree = None
         self._coords_array = None
+        self._triangulation = None
+    
+    def compute_delaunay(self) -> None:
+        """Compute Delaunay triangulation of the point cloud.
+        
+        This creates a triangulation that can be used for interpolation.
+        The triangulation is stored in the _triangulation attribute.
+        """
+        from scipy.spatial import Delaunay
+        
+        if not self.points:
+            raise ValueError("Cannot compute Delaunay triangulation of empty point cloud")
+        
+        # Get 2D points (x,y coordinates only) for triangulation
+        points_2d = np.array([[p.x, p.y] for p in self.points.values()])
+        self._triangulation = Delaunay(points_2d)
+    
+    def interpolate_z_delaunay(self, x: float, y: float) -> float:
+        """Interpolate Z value at given X,Y coordinates using Delaunay triangulation.
+        
+        Args:
+            x: X coordinate
+            y: Y coordinate
+            
+        Returns:
+            Interpolated Z value
+            
+        Raises:
+            ValueError: If point is outside the triangulation or triangulation hasn't been computed
+        """
+        if self._triangulation is None:
+            self.compute_delaunay()
+            
+        point = np.array([[x, y]])
+        simplex = self._triangulation.find_simplex(point)
+        
+        if simplex < 0:
+            raise ValueError("Point is outside the triangulation")
+            
+        # Get vertices of the triangle containing the point
+        vertices = self._triangulation.simplices[simplex][0]  # Get first (and only) simplex
+        points_list = list(self.points.values())
+        triangle_points = [points_list[int(i)] for i in vertices]
+        
+        # Compute barycentric coordinates
+        x1, y1 = triangle_points[0].x, triangle_points[0].y
+        x2, y2 = triangle_points[1].x, triangle_points[1].y
+        x3, y3 = triangle_points[2].x, triangle_points[2].y
+        
+        det = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
+        w1 = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / det
+        w2 = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / det
+        w3 = 1 - w1 - w2
+        
+        # Interpolate z using barycentric coordinates
+        z = (w1 * triangle_points[0].z + 
+             w2 * triangle_points[1].z + 
+             w3 * triangle_points[2].z)
+        
+        return z
+    
+    def interpolate_z_idw(self, x: float, y: float, k: int = None, p: float = 2) -> float:
+        """Interpolate Z value at given X,Y coordinates using Inverse Distance Weighting.
+        
+        Args:
+            x: X coordinate
+            y: Y coordinate
+            k: Number of nearest neighbors to use (default: all points)
+            p: Power parameter (higher values give more weight to closer points)
+            
+        Returns:
+            Interpolated Z value
+            
+        Raises:
+            ValueError: If point cloud is empty
+        """
+        if not self.points:
+            raise ValueError("Cannot interpolate with empty point cloud")
+            
+        if k is None:
+            k = len(self.points)
+        else:
+            k = min(k, len(self.points))
+            
+        # Ensure KD-tree is built
+        if self._kdtree is None:
+            self._build_index()
+            
+        # Find k nearest neighbors
+        distances, indices = self._kdtree.query(np.array([[x, y, 0]]), k=k)
+        distances = distances[0]  # Flatten array
+        indices = indices[0]      # Flatten array
+        
+        # Handle exact matches
+        if distances[0] == 0:
+            return list(self.points.values())[indices[0]].z
+            
+        # Compute weights using inverse distance
+        weights = 1.0 / (distances ** p)
+        weights_sum = np.sum(weights)
+        
+        # Get z values of neighbors
+        points_list = list(self.points.values())
+        neighbors = [points_list[i] for i in indices]
+        z_values = np.array([p.z for p in neighbors])
+        
+        # Compute weighted average
+        z = np.sum(weights * z_values) / weights_sum
+        
+        return float(z)
     
     def find_nearest_neighbors(self, point_id: int, k: int) -> List[Tuple[int, float]]:
         """Find k nearest neighbors to a point.

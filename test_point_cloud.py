@@ -94,5 +94,36 @@ class TestPointCloud(unittest.TestCase):
         finally:
             os.unlink(filename)
 
+    def test_delaunay_interpolation(self):
+        """Test Delaunay triangulation interpolation."""
+        # Add more points to create a valid triangulation
+        p4 = Point3d(id=4, x=0.0, y=1.0, z=0.0)
+        self.cloud.add_point(p4)
+        
+        # Compute triangulation
+        self.cloud.compute_delaunay()
+        
+        # Test point inside the triangulation
+        z = self.cloud.interpolate_z_delaunay(0.5, 0.5)
+        self.assertIsInstance(z, float)
+        
+        # Test point outside triangulation
+        with self.assertRaises(ValueError):
+            self.cloud.interpolate_z_delaunay(-1.0, -1.0)
+            
+    def test_idw_interpolation(self):
+        """Test IDW interpolation."""
+        # Test with default parameters (all points)
+        z = self.cloud.interpolate_z_idw(0.5, 0.5)
+        self.assertIsInstance(z, float)
+        
+        # Test with custom parameters
+        z = self.cloud.interpolate_z_idw(0.5, 0.5, k=2, p=3)
+        self.assertIsInstance(z, float)
+        
+        # Test with k larger than number of points (should use all points)
+        z = self.cloud.interpolate_z_idw(0.5, 0.5, k=10)
+        self.assertIsInstance(z, float)
+
 if __name__ == '__main__':
     unittest.main()
