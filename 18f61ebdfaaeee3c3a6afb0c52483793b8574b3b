@@ -1,0 +1,1 @@
+In demo_dxf_processor, utilize the PointCloud class and implement an add_point function. Within PointCloud, add a method to generate Delaunay triangles and another function to compute the Z value for given X, Y coordinates using barycentric interpolation. Additionally, integrate IDW (Inverse Distance Weighting) interpolation to enhance the coverage of the point cloud model.
