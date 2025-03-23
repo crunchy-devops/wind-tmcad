@@ -1,0 +1,1 @@
+Integrate a Flask dialog box into the web server using a Bootstrap theme to allow users to select a DXF layer before displaying isometric contour lines. Implement a validation step to ensure the contour lines are properly closed, preventing errors where some points are misplaced or lines incorrectly intersect the terrain model.
