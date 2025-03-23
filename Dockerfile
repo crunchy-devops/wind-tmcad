@@ -27,7 +27,6 @@ COPY point_cloud.py .
 COPY point3d.py .
 COPY dxf_processor.py .
 COPY templates/ templates/
-COPY static/ static/
 COPY data/ data/
 
 # Create non-root user for security

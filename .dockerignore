@@ -60,7 +60,6 @@ LICENSE
 *.log
 *.sqlite3
 *.db
-data/
 uploads/
 *.dxf
 .DS_Store
