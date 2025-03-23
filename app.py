@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Get absolute path to DXF file
-DXF_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'plan-masse.dxf')
+DXF_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'project.dxf')
 
 def create_point_cloud_plot():
     """Create a 2D plot with points and contour lines."""
@@ -36,7 +36,7 @@ def create_point_cloud_plot():
         # Try to find the correct layer
         target_layer = None
         for layer in layers:
-            if 'z value' in layer.lower():
+           if 'z value projet' in layer.lower():
                 target_layer = layer
                 break
         

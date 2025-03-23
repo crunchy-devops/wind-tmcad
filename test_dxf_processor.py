@@ -6,7 +6,7 @@ from point3d import Point3d
 
 def test_get_layers():
     """Test layer retrieval."""
-    processor = DXFProcessor("data/plan-masse.dxf")
+    processor = DXFProcessor("data/project.dxf")
     layers = processor.get_layers()
     assert isinstance(layers, list)
     assert len(layers) > 0
@@ -14,7 +14,7 @@ def test_get_layers():
 
 def test_extract_points_from_layer():
     """Test point extraction from z value TN layer."""
-    processor = DXFProcessor("data/plan-masse.dxf")
+    processor = DXFProcessor("data/project.dxf")
     points = processor.extract_points_from_layer("z value TN")
     
     assert isinstance(points, dict)
@@ -30,7 +30,7 @@ def test_extract_points_from_layer():
 
 def test_break_lines():
     """Test break line functionality."""
-    processor = DXFProcessor("data/plan-masse.dxf")
+    processor = DXFProcessor("data/project.dxf")
     points = processor.extract_points_from_layer("z value TN")
     
     # Get first three point IDs
@@ -49,7 +49,7 @@ def test_break_lines():
 
 def test_point_cloud_conversion():
     """Test conversion to numpy point cloud."""
-    processor = DXFProcessor("data/plan-masse.dxf")
+    processor = DXFProcessor("data/project.dxf")
     processor.extract_points_from_layer("z value TN")
     
     point_cloud = processor.get_point_cloud()

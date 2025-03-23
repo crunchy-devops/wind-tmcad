@@ -5,16 +5,16 @@ import numpy as np
 
 def main():
     # Initialize processor with DXF file
-    processor = DXFProcessor("data/plan-masse.dxf")
+    processor = DXFProcessor("data/project.dxf")
     
     # Print available layers
     print("Available layers:")
     for layer in processor.get_layers():
         print(f"- {layer}")
     
-    # Extract points from z value TN layer
-    points = processor.extract_points_from_layer("z value TN")
-    print(f"\nExtracted {len(points)} points from 'z value TN' layer")
+    # Extract points from z value projet layer
+    points = processor.extract_points_from_layer("z value projet")
+    print(f"\nExtracted {len(points)} points from 'z value projet' layer")
     
     # Create point cloud and add points
     cloud = PointCloud()
