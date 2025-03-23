@@ -18,7 +18,7 @@ app = Flask(__name__)
 DXF_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'plan-masse.dxf')
 
 def create_point_cloud_plot():
-    """Create a 2D scatter plot of the point cloud with Z values as colors."""
+    """Create a 2D plot with points and contour lines."""
     try:
         logger.info(f"Loading DXF file from: {DXF_FILE}")
         
@@ -51,7 +51,16 @@ def create_point_cloud_plot():
             logger.error("No points found in the DXF file")
             raise ValueError("No points found in the DXF file")
         
-        # Create arrays for plotting
+        # Create point cloud and generate contours
+        cloud = PointCloud()
+        for point in points.values():
+            cloud.add_point(point)
+        
+        # Generate contour lines at different intervals
+        intervals = [0.25, 0.5, 1.0]  # 25cm, 50cm, and 1m intervals
+        contours = cloud.get_contour_lines(intervals)
+        
+        # Create arrays for point plotting
         x_coords = []
         y_coords = []
         z_coords = []
@@ -65,25 +74,52 @@ def create_point_cloud_plot():
         
         logger.info(f"Loaded {len(points)} points for plotting")
         
-        # Create scatter plot
-        scatter = go.Scatter(
-            x=x_coords,
-            y=y_coords,
-            mode='markers',
-            marker=dict(
-                size=8,
-                color=z_coords,
-                colorscale='Viridis',
-                colorbar=dict(
-                    title='Elevation (Z)',
-                    titleside='right'
-                ),
-                showscale=True,
-                opacity=0.8
-            ),
-            text=text_labels,
-            hoverinfo='text'
-        )
+        # Create data list for plotting
+        data = []
+        
+        # Add contour lines with different styles for each interval
+        colors = {0.25: 'rgba(255,127,14,0.6)', 0.5: 'rgba(44,160,44,0.8)', 1.0: 'rgba(31,119,180,1)'}
+        widths = {0.25: 1, 0.5: 2, 1.0: 3}
+        
+        for interval in intervals:
+            for level, paths in contours.items():
+                # Find which interval this level belongs to
+                level_interval = min(intervals, key=lambda x: level % x)
+                if level_interval == interval:
+                    for path in paths:
+                        # Convert path to lists explicitly
+                        x_path = [float(x) for x, _ in path]
+                        y_path = [float(y) for _, y in path]
+                        
+                        data.append({
+                            'type': 'scatter',
+                            'mode': 'lines',
+                            'x': x_path,
+                            'y': y_path,
+                            'line': {
+                                'color': colors[interval],
+                                'width': widths[interval]
+                            },
+                            'name': f'Contour {level:.2f}m',
+                            'showlegend': True
+                        })
+        
+        # Add points
+        data.append({
+            'type': 'scatter',
+            'mode': 'markers',
+            'x': x_coords,
+            'y': y_coords,
+            'marker': {
+                'color': z_coords,
+                'colorscale': 'Viridis',
+                'showscale': True,
+                'colorbar': {'title': 'Elevation (Z)'}
+            },
+            'text': text_labels,
+            'hoverinfo': 'text',
+            'name': 'Points'
+        })
         
         # Calculate plot bounds with some padding
         x_range = [min(x_coords), max(x_coords)]
@@ -92,28 +128,23 @@ def create_point_cloud_plot():
         y_padding = (y_range[1] - y_range[0]) * 0.05
         
         # Create layout
-        layout = go.Layout(
-            title='Point Cloud Elevation Map',
-            xaxis=dict(
-                title='X',
-                range=[x_range[0] - x_padding, x_range[1] + x_padding]
-            ),
-            yaxis=dict(
-                title='Y',
-                range=[y_range[0] - y_padding, y_range[1] + y_padding],
-                scaleanchor='x',  # Make the scale of x and y axes equal
-                scaleratio=1
-            ),
-            showlegend=False,
-            margin=dict(l=50, r=50, b=50, t=50),
-            plot_bgcolor='white',
-            paper_bgcolor='white',
-            hovermode='closest'
-        )
+        layout = {
+            'title': 'Point Cloud with Elevation Contours',
+            'xaxis': {'title': 'X', 'range': [x_range[0] - x_padding, x_range[1] + x_padding]},
+            'yaxis': {'title': 'Y', 'range': [y_range[0] - y_padding, y_range[1] + y_padding], 'scaleanchor': 'x', 'scaleratio': 1},
+            'showlegend': True,
+            'legend': {'title': 'Contour Lines', 'yanchor': 'top', 'y': 0.99, 'xanchor': 'left', 'x': 1.05},
+            'margin': {'l': 50, 'r': 150, 'b': 50, 't': 50},  # Increased right margin for legend
+            'plot_bgcolor': 'white',
+            'paper_bgcolor': 'white',
+            'hovermode': 'closest'
+        }
         
         # Create figure and return as JSON
-        fig = go.Figure(data=[scatter], layout=layout)
-        return jsonify(fig.to_dict())
+        return jsonify({
+            'data': data,
+            'layout': layout
+        })
         
     except Exception as e:
         logger.exception("Error creating plot")

@@ -2,23 +2,16 @@
 from typing import Dict, List, Optional, Tuple, Set
 import numpy as np
 from scipy.spatial import cKDTree, Delaunay
+from scipy.interpolate import griddata
 import h5py
 import math
 from point3d import Point3d
+import matplotlib.pyplot as plt
 
 __all__ = ['PointCloud']
 
 class PointCloud:
-    """A memory-efficient point cloud implementation with spatial indexing.
-    
-    Uses KD-tree for spatial queries and HDF5 for efficient storage.
-    
-    Attributes:
-        points (Dict[int, Point3d]): Dictionary mapping point IDs to Point3d objects
-        _kdtree (cKDTree): Spatial index for efficient nearest neighbor queries
-        _coords_array (np.ndarray): Numpy array of point coordinates for KD-tree
-        _triangulation: Delaunay triangulation of the point cloud
-    """
+    """A memory-efficient point cloud implementation with spatial indexing."""
     
     __slots__ = ['points', '_kdtree', '_coords_array', '_triangulation']
     
@@ -322,3 +315,82 @@ class PointCloud:
                                       y=float(point['y']),
                                       z=float(point['z'])))
         return cloud
+    
+    def get_contour_lines(self, intervals: List[float] = None) -> Dict[float, List[List[List[float]]]]:
+        """Generate contour lines at specified intervals.
+        
+        Args:
+            intervals: List of elevation intervals for contours.
+                     If None, uses [0.25, 0.5, 1.0] meters.
+        
+        Returns:
+            Dictionary mapping elevation levels to lists of contour paths.
+            Each path is a list of [x, y] coordinates.
+        """
+        if not self.points:
+            return {}
+            
+        if intervals is None:
+            # Default intervals: 25cm, 50cm, and 1m
+            intervals = [0.25, 0.5, 1.0]
+        
+        # Extract point coordinates
+        point_list = list(self.points.values())
+        x_coords = np.array([p.x for p in point_list])
+        y_coords = np.array([p.y for p in point_list])
+        z_values = np.array([p.z for p in point_list])
+        
+        # Calculate grid bounds with some padding
+        x_min, x_max = float(x_coords.min()), float(x_coords.max())
+        y_min, y_max = float(y_coords.min()), float(y_coords.max())
+        padding = 0.05  # 5% padding
+        x_pad = (x_max - x_min) * padding
+        y_pad = (y_max - y_min) * padding
+        
+        # Create regular grid
+        grid_size = 100  # number of points in each dimension
+        xi = np.linspace(x_min - x_pad, x_max + x_pad, grid_size)
+        yi = np.linspace(y_min - y_pad, y_max + y_pad, grid_size)
+        xi_grid, yi_grid = np.meshgrid(xi, yi)
+        
+        # Interpolate Z values on the grid
+        points = np.column_stack((x_coords, y_coords))
+        zi_grid = griddata(points, z_values, (xi_grid, yi_grid), method='cubic')
+        
+        # Generate contour lines
+        contours = {}
+        z_min, z_max = float(z_values.min()), float(z_values.max())
+        
+        # Generate levels based on intervals
+        all_levels = []
+        for interval in intervals:
+            # Generate levels from min to max at the current interval
+            start_level = float(np.ceil(z_min / interval) * interval)
+            end_level = float(np.floor(z_max / interval) * interval)
+            levels = np.arange(start_level, end_level + interval, interval)
+            all_levels.extend(levels.tolist())  # Convert to list
+        
+        # Remove duplicates and sort
+        all_levels = sorted(set(all_levels))
+        
+        # Generate contours for each level
+        plt.ioff()  # Turn off interactive mode
+        for level in all_levels:
+            # Generate contour using matplotlib
+            plt.figure()
+            cs = plt.contour(xi_grid, yi_grid, zi_grid, levels=[level])
+            plt.close()
+            
+            # Extract contour coordinates and convert to lists
+            contour_paths = []
+            for path in cs.collections[0].get_paths():
+                vertices = path.vertices
+                if len(vertices) > 2:  # Only include contours with at least 3 points
+                    # Convert vertices to a list of [x, y] coordinates
+                    path_coords = [[float(x), float(y)] for x, y in vertices]
+                    contour_paths.append(path_coords)
+            
+            if contour_paths:
+                contours[float(level)] = contour_paths
+        
+        return contours
