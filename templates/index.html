@@ -4,109 +4,187 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Point Cloud Visualization</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Plotly.js -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
     <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        #plot {
-            width: 100%;
-            height: 80vh;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
         .loading {
-            text-align: center;
-            padding: 20px;
-            font-size: 18px;
-            color: #666;
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
         }
-        .error {
-            text-align: center;
-            padding: 20px;
-            font-size: 18px;
+        .validation-error {
             color: #dc3545;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            margin: 20px 0;
-        }
-        .retry-button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
+            display: none;
             margin-top: 10px;
-        }
-        .retry-button:hover {
-            background-color: #0056b3;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Point Cloud Visualization</h1>
-        <div id="plot">
-            <div class="loading">Loading plot...</div>
-        </div>
-    </div>
-    <script>
-        function loadPlot() {
-            const plotDiv = document.getElementById('plot');
-            plotDiv.innerHTML = '<div class="loading">Loading plot...</div>';
-            
-            fetch('/get_plot_data')
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(data => {
-                            throw new Error(data.error || 'Failed to load plot data');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(figure => {
-                    // Create the plot
-                    Plotly.newPlot('plot', figure.data, figure.layout, {
-                        responsive: true,
-                        displayModeBar: true,
-                        modeBarButtonsToRemove: ['sendDataToCloud'],
-                        displaylogo: false
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading plot:', error);
-                    plotDiv.innerHTML = `
-                        <div class="error">
-                            Error loading plot: ${error.message}
-                            <br>
-                            <button class="retry-button" onclick="loadPlot()">Retry</button>
-                        </div>
-                    `;
-                });
-        }
+<body class="bg-light">
+    <div class="container py-4">
+        <h1 class="mb-4">Point Cloud Visualization</h1>
         
-        // Initial load
-        loadPlot();
+        <!-- File Upload Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Upload DXF File</h5>
+                <form id="uploadForm" class="mb-3">
+                    <div class="mb-3">
+                        <input type="file" class="form-control" id="dxfFile" accept=".dxf" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Layer Selection Modal -->
+        <div class="modal fade" id="layerModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Select Layer</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="layerSelect">Available Layers:</label>
+                            <select class="form-control" id="layerSelect">
+                                <!-- Layers will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="mt-3">
+                            <h6>Contour Settings:</h6>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="validate25cm" checked>
+                                <label class="form-check-label" for="validate25cm">
+                                    25cm intervals
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="validate50cm" checked>
+                                <label class="form-check-label" for="validate50cm">
+                                    50cm intervals
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="validate1m" checked>
+                                <label class="form-check-label" for="validate1m">
+                                    1m intervals
+                                </label>
+                            </div>
+                        </div>
+                        <div class="validation-error" id="validationError">
+                            <!-- Validation errors will be shown here -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="processLayer">Process</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading" id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Visualization Container -->
+        <div id="plotContainer" style="height: 600px;"></div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize Bootstrap components
+        const layerModal = new bootstrap.Modal(document.getElementById('layerModal'));
+        
+        // Handle file upload
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('dxfFile');
+            formData.append('file', fileInput.files[0]);
+            
+            try {
+                const response = await fetch('/get_layers', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                // Populate layer select
+                const layerSelect = document.getElementById('layerSelect');
+                layerSelect.innerHTML = '';
+                data.layers.forEach(layer => {
+                    const option = document.createElement('option');
+                    option.value = layer;
+                    option.textContent = layer;
+                    layerSelect.appendChild(option);
+                });
+                
+                // Show layer selection modal
+                layerModal.show();
+                
+            } catch (error) {
+                alert('Error uploading file: ' + error.message);
+            }
+        });
+        
+        // Handle layer processing
+        document.getElementById('processLayer').addEventListener('click', async () => {
+            const layer = document.getElementById('layerSelect').value;
+            const intervals = {
+                '0.25': document.getElementById('validate25cm').checked,
+                '0.5': document.getElementById('validate50cm').checked,
+                '1.0': document.getElementById('validate1m').checked
+            };
+            
+            document.getElementById('loadingSpinner').style.display = 'block';
+            layerModal.hide();
+            
+            try {
+                const response = await fetch('/process_layer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ layer, intervals })
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('validationError').textContent = data.error;
+                    document.getElementById('validationError').style.display = 'block';
+                    layerModal.show();
+                    return;
+                }
+                
+                // Update plot
+                Plotly.newPlot('plotContainer', data.data, data.layout);
+                
+            } catch (error) {
+                alert('Error processing layer: ' + error.message);
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
