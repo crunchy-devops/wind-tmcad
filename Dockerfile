@@ -21,13 +21,23 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
-COPY . .
+# Copy only necessary project files
+COPY app.py .
+COPY point_cloud.py .
+COPY point3d.py .
+COPY dxf_processor.py .
+COPY templates/ templates/
+COPY static/ static/
+COPY data/ data/
 
 # Create non-root user for security
 RUN useradd -m appuser && \
     chown -R appuser:appuser /app
 USER appuser
+
+# Create necessary directories with correct permissions
+RUN mkdir -p /app/uploads && \
+    chown -R appuser:appuser /app/uploads
 
 # Expose port
 EXPOSE 5000
