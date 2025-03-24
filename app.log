@@ -1,0 +1,34 @@
+2025-03-24 10:30:16,467 - werkzeug - WARNING -  * Debugger is active!
+2025-03-24 10:30:16,468 - werkzeug - WARNING -  * Debugger is active!
+2025-03-24 10:30:16,477 - werkzeug - WARNING -  * Debugger is active!
+2025-03-24 10:30:16,535 - werkzeug - INFO -  * Debugger PIN: 168-544-244
+2025-03-24 10:30:16,550 - werkzeug - INFO -  * Debugger PIN: 168-544-244
+2025-03-24 10:30:16,552 - werkzeug - INFO -  * Debugger PIN: 168-544-244
+2025-03-24 10:30:16,688 - werkzeug - WARNING -  * Debugger is active!
+2025-03-24 10:30:16,711 - werkzeug - WARNING -  * Debugger is active!
+2025-03-24 10:30:16,741 - werkzeug - INFO -  * Debugger PIN: 168-544-244
+2025-03-24 10:30:16,748 - werkzeug - WARNING -  * Debugger is active!
+2025-03-24 10:30:16,757 - werkzeug - INFO -  * Debugger PIN: 168-544-244
+2025-03-24 10:30:16,801 - werkzeug - INFO -  * Debugger PIN: 168-544-244
+2025-03-24 10:30:16,934 - werkzeug - WARNING -  * Debugger is active!
+2025-03-24 10:30:16,952 - werkzeug - WARNING -  * Debugger is active!
+2025-03-24 10:30:16,977 - werkzeug - INFO -  * Debugger PIN: 168-544-244
+2025-03-24 10:30:16,993 - werkzeug - INFO -  * Debugger PIN: 168-544-244
+2025-03-24 10:30:45,249 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.5.0.2:5000
+2025-03-24 10:30:45,250 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-24 10:30:45,253 - werkzeug - INFO -  * Restarting with stat
+2025-03-24 10:30:47,625 - werkzeug - WARNING -  * Debugger is active!
+2025-03-24 10:30:47,661 - werkzeug - INFO -  * Debugger PIN: 168-544-244
+2025-03-24 10:30:52,328 - werkzeug - INFO -  * Detected change in 'D:\\crunchydevops\\leanpub\\wind-tmcad\\point_cloud.py', reloading
+2025-03-24 10:30:52,511 - werkzeug - INFO -  * Detected change in 'D:\\crunchydevops\\leanpub\\wind-tmcad\\point_cloud.py', reloading
+2025-03-24 10:30:52,637 - werkzeug - INFO -  * Detected change in 'D:\\crunchydevops\\leanpub\\wind-tmcad\\point_cloud.py', reloading
+2025-03-24 10:30:52,770 - werkzeug - INFO -  * Detected change in 'D:\\crunchydevops\\leanpub\\wind-tmcad\\point_cloud.py', reloading
+2025-03-24 10:30:53,029 - werkzeug - INFO -  * Detected change in 'D:\\crunchydevops\\leanpub\\wind-tmcad\\point_cloud.py', reloading
+2025-03-24 10:30:53,264 - werkzeug - INFO -  * Detected change in 'D:\\crunchydevops\\leanpub\\wind-tmcad\\point_cloud.py', reloading
+2025-03-24 10:30:53,436 - werkzeug - INFO -  * Detected change in 'D:\\crunchydevops\\leanpub\\wind-tmcad\\point_cloud.py', reloading
+2025-03-24 10:30:53,448 - werkzeug - INFO -  * Detected change in 'D:\\crunchydevops\\leanpub\\wind-tmcad\\point_cloud.py', reloading
+2025-03-24 10:30:53,624 - werkzeug - INFO -  * Detected change in 'D:\\crunchydevops\\leanpub\\wind-tmcad\\point_cloud.py', reloading
+2025-03-24 10:30:53,957 - werkzeug - INFO -  * Restarting with stat

@@ -13,6 +13,17 @@ from shapely.geometry import LineString, Polygon, MultiLineString
 from shapely.ops import unary_union, linemerge
 from shapely.validation import explain_validity
 
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('point_cloud.log'),  # Log to file
+        logging.StreamHandler()  # Log to console
+    ]
+)
+logger = logging.getLogger(__name__)
+
 __all__ = ['PointCloud']
 
 class PointCloud:
@@ -61,7 +72,7 @@ class PointCloud:
     def _validate_and_fix_contour(self, contour: LineString, level: float) -> Optional[LineString]:
         """Validate and fix a contour line."""
         if not contour.is_valid:
-            logging.warning(f"Invalid contour at level {level}: {explain_validity(contour)}")
+            logger.warning(f"Invalid contour at level {level}: {explain_validity(contour)}")
             return None
             
         # Ensure the contour is within the boundary
@@ -107,10 +118,10 @@ class PointCloud:
         
     def get_contour_lines(self, intervals: List[float] = None) -> Dict[float, List[List[List[float]]]]:
         """Generate contour lines at specified intervals."""
-        print(f"Starting contour generation with intervals: {intervals}")  # Debug print
+        logger.debug(f"Starting contour generation with intervals: {intervals}")  # Debug print
         
         if not self.points:
-            print("No points in point cloud")  # Debug print
+            logger.debug("No points in point cloud")  # Debug print
             return {}
             
         if intervals is None:
@@ -119,10 +130,10 @@ class PointCloud:
         # Get point coordinates
         points = np.array([(p.x, p.y, p.z) for p in self.points.values()])
         x, y, z = points[:, 0], points[:, 1], points[:, 2]
-        print(f"Point cloud stats: {len(points)} points")  # Debug print
-        print(f"X range: [{x.min():.2f}, {x.max():.2f}]")  # Debug print
-        print(f"Y range: [{y.min():.2f}, {y.max():.2f}]")  # Debug print
-        print(f"Z range: [{z.min():.2f}, {z.max():.2f}]")  # Debug print
+        logger.debug(f"Point cloud stats: {len(points)} points")  # Debug print
+        logger.debug(f"X range: [{x.min():.2f}, {x.max():.2f}]")  # Debug print
+        logger.debug(f"Y range: [{y.min():.2f}, {y.max():.2f}]")  # Debug print
+        logger.debug(f"Z range: [{z.min():.2f}, {z.max():.2f}]")  # Debug print
         
         # Get data bounds
         x_min, x_max = x.min(), x.max()
@@ -134,27 +145,27 @@ class PointCloud:
         xi = np.linspace(x_min, x_max, grid_size)
         yi = np.linspace(y_min, y_max, grid_size)
         xi, yi = np.meshgrid(xi, yi)
-        print(f"Created interpolation grid of size {grid_size}x{grid_size}")  # Debug print
+        logger.debug(f"Created interpolation grid of size {grid_size}x{grid_size}")  # Debug print
         
         # Interpolate z values on the grid
         try:
             zi = griddata((x, y), z, (xi, yi), method='cubic')
-            print("Completed cubic interpolation")  # Debug print
+            logger.debug("Completed cubic interpolation")  # Debug print
         except Exception as e:
-            print(f"Error in cubic interpolation: {str(e)}")  # Debug print
+            logger.debug(f"Error in cubic interpolation: {str(e)}")  # Debug print
             return {}
             
         # Fill any NaN values using linear then nearest neighbor interpolation
         mask = np.isnan(zi)
         if mask.any():
-            print(f"Filling {np.sum(mask)} NaN values with linear interpolation")  # Debug print
+            logger.debug(f"Filling {np.sum(mask)} NaN values with linear interpolation")  # Debug print
             zi_linear = griddata((x, y), z, (xi[mask], yi[mask]), method='linear')
             zi[mask] = zi_linear
             
             # Fill any remaining NaNs with nearest neighbor
             mask = np.isnan(zi)
             if mask.any():
-                print(f"Filling {np.sum(mask)} remaining NaN values with nearest neighbor")  # Debug print
+                logger.debug(f"Filling {np.sum(mask)} remaining NaN values with nearest neighbor")  # Debug print
                 zi[mask] = griddata((x, y), z, (xi[mask], yi[mask]), method='nearest')
         
         # Generate contours
@@ -163,10 +174,10 @@ class PointCloud:
             min_level = math.floor(z_min / interval) * interval
             max_level = math.ceil(z_max / interval) * interval
             levels = np.arange(min_level, max_level + interval, interval)
-            print(f"Generating contours for interval {interval}, levels: {levels}")  # Debug print
+            logger.debug(f"Generating contours for interval {interval}, levels: {levels}")  # Debug print
             
             if len(levels) == 0:
-                print(f"No levels generated for interval {interval}")  # Debug print
+                logger.debug(f"No levels generated for interval {interval}")  # Debug print
                 continue
                 
             try:
@@ -177,7 +188,7 @@ class PointCloud:
                 for level_idx, level in enumerate(cs.levels):
                     level_contours = []
                     paths = cs.collections[level_idx].get_paths()
-                    print(f"Found {len(paths)} paths for level {level}")  # Debug print
+                    logger.debug(f"Found {len(paths)} paths for level {level}")  # Debug print
                     
                     # Convert matplotlib paths to Shapely geometries
                     shapely_contours = []
@@ -189,7 +200,7 @@ class PointCloud:
                             if fixed_contour is not None:
                                 shapely_contours.append(fixed_contour)
                     
-                    print(f"Created {len(shapely_contours)} valid Shapely contours")  # Debug print
+                    logger.debug(f"Created {len(shapely_contours)} valid Shapely contours")  # Debug print
                     
                     # Simplify and clean up contours
                     if shapely_contours:
@@ -203,7 +214,7 @@ class PointCloud:
                             
                         # Simplify and validate each part
                         simplified = self._simplify_contours(parts)
-                        print(f"Simplified to {len(simplified)} contours")  # Debug print
+                        logger.debug(f"Simplified to {len(simplified)} contours")  # Debug print
                         
                         # Convert back to coordinate lists
                         for contour in simplified:
@@ -213,11 +224,11 @@ class PointCloud:
                     
                     if level_contours:
                         contours[float(level)] = level_contours
-                        print(f"Added {len(level_contours)} contours for level {level}")  # Debug print
+                        logger.debug(f"Added {len(level_contours)} contours for level {level}")  # Debug print
                         
             except Exception as e:
-                print(f"Error generating contours at interval {interval}: {str(e)}")  # Debug print
+                logger.debug(f"Error generating contours at interval {interval}: {str(e)}")  # Debug print
                 continue
         
-        print(f"Finished contour generation, generated contours for {len(contours)} levels")  # Debug print
+        logger.debug(f"Finished contour generation, generated contours for {len(contours)} levels")  # Debug print
         return contours
