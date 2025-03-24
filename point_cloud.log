@@ -795,3 +795,172 @@
 2025-03-24 10:32:36,373 - point_cloud - DEBUG - Finished contour generation, generated contours for 0 levels
 2025-03-24 10:32:36,373 - root - INFO - Successfully created plot with 1 traces
 2025-03-24 10:32:36,376 - werkzeug - INFO - 127.0.0.1 - - [24/Mar/2025 10:32:36] "POST /process_layer HTTP/1.1" 200 -
+2025-03-24 12:36:20,898 - werkzeug - INFO - 127.0.0.1 - - [24/Mar/2025 12:36:20] "GET / HTTP/1.1" 200 -
+2025-03-24 12:36:26,652 - ezdxf - WARNING - GEODATA version 1 found, perhaps loaded data is incorrect
+2025-03-24 12:36:26,694 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3B3) in BLOCK(#20)
+2025-03-24 12:36:26,694 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3B6) in BLOCK(#20)
+2025-03-24 12:36:26,695 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3B9) in BLOCK(#20)
+2025-03-24 12:36:26,695 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3E3) in BLOCK(#20)
+2025-03-24 12:36:26,695 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3E6) in BLOCK(#20)
+2025-03-24 12:36:26,695 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3E9) in BLOCK(#20)
+2025-03-24 12:36:26,695 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3EC) in BLOCK(#20)
+2025-03-24 12:36:26,695 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3EF) in BLOCK(#20)
+2025-03-24 12:36:26,695 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3F2) in BLOCK(#20)
+2025-03-24 12:36:26,696 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3F5) in BLOCK(#20)
+2025-03-24 12:36:26,696 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3F8) in BLOCK(#20)
+2025-03-24 12:36:26,696 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3FB) in BLOCK(#20)
+2025-03-24 12:36:26,696 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3FE) in BLOCK(#20)
+2025-03-24 12:36:26,696 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#401) in BLOCK(#20)
+2025-03-24 12:36:26,697 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#404) in BLOCK(#20)
+2025-03-24 12:36:26,697 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#407) in BLOCK(#20)
+2025-03-24 12:36:26,697 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#40A) in BLOCK(#20)
+2025-03-24 12:36:26,697 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#40D) in BLOCK(#20)
+2025-03-24 12:36:26,697 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#413) in BLOCK(#20)
+2025-03-24 12:36:26,697 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#419) in BLOCK(#20)
+2025-03-24 12:36:26,698 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#41C) in BLOCK(#20)
+2025-03-24 12:36:26,698 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#422) in BLOCK(#20)
+2025-03-24 12:36:26,698 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#428) in BLOCK(#20)
+2025-03-24 12:36:26,698 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#42E) in BLOCK(#20)
+2025-03-24 12:36:26,698 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#431) in BLOCK(#20)
+2025-03-24 12:36:26,698 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#434) in BLOCK(#20)
+2025-03-24 12:36:26,698 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#437) in BLOCK(#20)
+2025-03-24 12:36:26,699 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#43D) in BLOCK(#20)
+2025-03-24 12:36:26,699 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#443) in BLOCK(#20)
+2025-03-24 12:36:26,699 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#446) in BLOCK(#20)
+2025-03-24 12:36:26,699 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#44C) in BLOCK(#20)
+2025-03-24 12:36:26,699 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#44F) in BLOCK(#20)
+2025-03-24 12:36:26,699 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#455) in BLOCK(#20)
+2025-03-24 12:36:26,699 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#458) in BLOCK(#20)
+2025-03-24 12:36:26,699 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#464) in BLOCK(#20)
+2025-03-24 12:36:26,700 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#467) in BLOCK(#20)
+2025-03-24 12:36:26,700 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#46A) in BLOCK(#20)
+2025-03-24 12:36:26,700 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#46D) in BLOCK(#20)
+2025-03-24 12:36:26,700 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#470) in BLOCK(#20)
+2025-03-24 12:36:26,700 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#473) in BLOCK(#20)
+2025-03-24 12:36:26,700 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#476) in BLOCK(#20)
+2025-03-24 12:36:26,701 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#479) in BLOCK(#20)
+2025-03-24 12:36:26,701 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#47F) in BLOCK(#20)
+2025-03-24 12:36:26,702 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#485) in BLOCK(#20)
+2025-03-24 12:36:26,702 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#488) in BLOCK(#20)
+2025-03-24 12:36:26,702 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#491) in BLOCK(#20)
+2025-03-24 12:36:26,703 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#494) in BLOCK(#20)
+2025-03-24 12:36:26,703 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#497) in BLOCK(#20)
+2025-03-24 12:36:26,703 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#49A) in BLOCK(#20)
+2025-03-24 12:36:26,703 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#49D) in BLOCK(#20)
+2025-03-24 12:36:26,703 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#4A0) in BLOCK(#20)
+2025-03-24 12:36:26,703 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#4AC) in BLOCK(#20)
+2025-03-24 12:36:26,703 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#4AF) in BLOCK(#20)
+2025-03-24 12:36:26,703 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#4B2) in BLOCK(#20)
+2025-03-24 12:36:26,704 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#4D9) in BLOCK(#20)
+2025-03-24 12:36:26,704 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#527) in BLOCK(#20)
+2025-03-24 12:36:26,704 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#52D) in BLOCK(#20)
+2025-03-24 12:36:26,704 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#530) in BLOCK(#20)
+2025-03-24 12:36:26,704 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#533) in BLOCK(#20)
+2025-03-24 12:36:26,704 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#539) in BLOCK(#20)
+2025-03-24 12:36:26,704 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#53C) in BLOCK(#20)
+2025-03-24 12:36:26,705 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#545) in BLOCK(#20)
+2025-03-24 12:36:26,705 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#54B) in BLOCK(#20)
+2025-03-24 12:36:26,705 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#54E) in BLOCK(#20)
+2025-03-24 12:36:26,705 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#554) in BLOCK(#20)
+2025-03-24 12:36:26,705 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#557) in BLOCK(#20)
+2025-03-24 12:36:26,705 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#55A) in BLOCK(#20)
+2025-03-24 12:36:26,805 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#55D) in BLOCK(#20)
+2025-03-24 12:36:26,810 - ezdxf - INFO - creating ACAD_COLOR dictionary
+2025-03-24 12:36:26,811 - werkzeug - INFO - 127.0.0.1 - - [24/Mar/2025 12:36:26] "POST /get_layers HTTP/1.1" 200 -
+2025-03-24 12:36:33,964 - root - INFO - Processing layer 'z value TN' with intervals: {'0.25': False, '0.5': True, '1.0': True}
+2025-03-24 12:36:33,965 - root - INFO - Using DXF file: uploads\project.dxf
+2025-03-24 12:36:34,178 - ezdxf - WARNING - GEODATA version 1 found, perhaps loaded data is incorrect
+2025-03-24 12:36:34,235 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3B3) in BLOCK(#20)
+2025-03-24 12:36:34,235 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3B6) in BLOCK(#20)
+2025-03-24 12:36:34,235 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3B9) in BLOCK(#20)
+2025-03-24 12:36:34,235 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3E3) in BLOCK(#20)
+2025-03-24 12:36:34,235 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3E6) in BLOCK(#20)
+2025-03-24 12:36:34,235 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3E9) in BLOCK(#20)
+2025-03-24 12:36:34,236 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3EC) in BLOCK(#20)
+2025-03-24 12:36:34,236 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3EF) in BLOCK(#20)
+2025-03-24 12:36:34,236 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3F2) in BLOCK(#20)
+2025-03-24 12:36:34,236 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3F5) in BLOCK(#20)
+2025-03-24 12:36:34,236 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3F8) in BLOCK(#20)
+2025-03-24 12:36:34,236 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3FB) in BLOCK(#20)
+2025-03-24 12:36:34,236 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#3FE) in BLOCK(#20)
+2025-03-24 12:36:34,236 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#401) in BLOCK(#20)
+2025-03-24 12:36:34,237 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#404) in BLOCK(#20)
+2025-03-24 12:36:34,237 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#407) in BLOCK(#20)
+2025-03-24 12:36:34,237 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#40A) in BLOCK(#20)
+2025-03-24 12:36:34,237 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#40D) in BLOCK(#20)
+2025-03-24 12:36:34,237 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#413) in BLOCK(#20)
+2025-03-24 12:36:34,237 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#419) in BLOCK(#20)
+2025-03-24 12:36:34,237 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#41C) in BLOCK(#20)
+2025-03-24 12:36:34,238 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#422) in BLOCK(#20)
+2025-03-24 12:36:34,238 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#428) in BLOCK(#20)
+2025-03-24 12:36:34,238 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#42E) in BLOCK(#20)
+2025-03-24 12:36:34,238 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#431) in BLOCK(#20)
+2025-03-24 12:36:34,238 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#434) in BLOCK(#20)
+2025-03-24 12:36:34,239 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#437) in BLOCK(#20)
+2025-03-24 12:36:34,240 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#43D) in BLOCK(#20)
+2025-03-24 12:36:34,240 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#443) in BLOCK(#20)
+2025-03-24 12:36:34,240 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#446) in BLOCK(#20)
+2025-03-24 12:36:34,240 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#44C) in BLOCK(#20)
+2025-03-24 12:36:34,240 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#44F) in BLOCK(#20)
+2025-03-24 12:36:34,240 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#455) in BLOCK(#20)
+2025-03-24 12:36:34,241 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#458) in BLOCK(#20)
+2025-03-24 12:36:34,241 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#464) in BLOCK(#20)
+2025-03-24 12:36:34,241 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#467) in BLOCK(#20)
+2025-03-24 12:36:34,242 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#46A) in BLOCK(#20)
+2025-03-24 12:36:34,242 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#46D) in BLOCK(#20)
+2025-03-24 12:36:34,242 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#470) in BLOCK(#20)
+2025-03-24 12:36:34,242 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#473) in BLOCK(#20)
+2025-03-24 12:36:34,243 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#476) in BLOCK(#20)
+2025-03-24 12:36:34,243 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#479) in BLOCK(#20)
+2025-03-24 12:36:34,243 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#47F) in BLOCK(#20)
+2025-03-24 12:36:34,288 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#485) in BLOCK(#20)
+2025-03-24 12:36:34,288 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#488) in BLOCK(#20)
+2025-03-24 12:36:34,288 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#491) in BLOCK(#20)
+2025-03-24 12:36:34,289 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#494) in BLOCK(#20)
+2025-03-24 12:36:34,289 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#497) in BLOCK(#20)
+2025-03-24 12:36:34,289 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#49A) in BLOCK(#20)
+2025-03-24 12:36:34,289 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#49D) in BLOCK(#20)
+2025-03-24 12:36:34,289 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#4A0) in BLOCK(#20)
+2025-03-24 12:36:34,289 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#4AC) in BLOCK(#20)
+2025-03-24 12:36:34,290 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#4AF) in BLOCK(#20)
+2025-03-24 12:36:34,290 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#4B2) in BLOCK(#20)
+2025-03-24 12:36:34,290 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#4D9) in BLOCK(#20)
+2025-03-24 12:36:34,291 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#527) in BLOCK(#20)
+2025-03-24 12:36:34,291 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#52D) in BLOCK(#20)
+2025-03-24 12:36:34,291 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#530) in BLOCK(#20)
+2025-03-24 12:36:34,291 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#533) in BLOCK(#20)
+2025-03-24 12:36:34,291 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#539) in BLOCK(#20)
+2025-03-24 12:36:34,291 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#53C) in BLOCK(#20)
+2025-03-24 12:36:34,291 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#545) in BLOCK(#20)
+2025-03-24 12:36:34,292 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#54B) in BLOCK(#20)
+2025-03-24 12:36:34,292 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#54E) in BLOCK(#20)
+2025-03-24 12:36:34,292 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#554) in BLOCK(#20)
+2025-03-24 12:36:34,292 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#557) in BLOCK(#20)
+2025-03-24 12:36:34,292 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#55A) in BLOCK(#20)
+2025-03-24 12:36:34,292 - ezdxf - DEBUG - Unexpected DXF entity TCPOINTENTITY(#55D) in BLOCK(#20)
+2025-03-24 12:36:34,300 - ezdxf - INFO - creating ACAD_COLOR dictionary
+2025-03-24 12:36:34,304 - point_cloud - DEBUG - Starting contour generation with intervals: [0.5, 1.0]
+2025-03-24 12:36:34,304 - point_cloud - DEBUG - Point cloud stats: 66 points
+2025-03-24 12:36:34,305 - point_cloud - DEBUG - X range: [1002.55, 1065.78]
+2025-03-24 12:36:34,305 - point_cloud - DEBUG - Y range: [2970.70, 3033.82]
+2025-03-24 12:36:34,305 - point_cloud - DEBUG - Z range: [90.70, 104.40]
+2025-03-24 12:36:34,306 - point_cloud - DEBUG - Created interpolation grid of size 50x50
+2025-03-24 12:36:34,316 - point_cloud - DEBUG - Completed cubic interpolation
+2025-03-24 12:36:34,317 - point_cloud - DEBUG - Filling 1267 NaN values with linear interpolation
+2025-03-24 12:36:34,417 - point_cloud - DEBUG - Filling 1267 remaining NaN values with nearest neighbor
+2025-03-24 12:36:34,426 - point_cloud - DEBUG - Generating contours for interval 0.5, levels: [ 90.5  91.   91.5  92.   92.5  93.   93.5  94.   94.5  95.   95.5  96.
+  96.5  97.   97.5  98.   98.5  99.   99.5 100.  100.5 101.  101.5 102.
+ 102.5 103.  103.5 104.  104.5]
+2025-03-24 12:36:34,522 - point_cloud - DEBUG - Found 0 paths for level 90.5
+2025-03-24 12:36:34,522 - point_cloud - DEBUG - Created 0 valid Shapely contours
+2025-03-24 12:36:34,523 - point_cloud - DEBUG - Found 1 paths for level 91.0
+2025-03-24 12:36:34,524 - point_cloud - DEBUG - Error generating contours at interval 0.5: 'PointCloud' object has no attribute '_get_convex_hull'
+2025-03-24 12:36:34,525 - point_cloud - DEBUG - Generating contours for interval 1.0, levels: [ 90.  91.  92.  93.  94.  95.  96.  97.  98.  99. 100. 101. 102. 103.
+ 104. 105.]
+2025-03-24 12:36:34,600 - point_cloud - DEBUG - Found 0 paths for level 90.0
+2025-03-24 12:36:34,600 - point_cloud - DEBUG - Created 0 valid Shapely contours
+2025-03-24 12:36:34,600 - point_cloud - DEBUG - Found 1 paths for level 91.0
+2025-03-24 12:36:34,601 - point_cloud - DEBUG - Error generating contours at interval 1.0: 'PointCloud' object has no attribute '_get_convex_hull'
+2025-03-24 12:36:34,601 - point_cloud - DEBUG - Finished contour generation, generated contours for 0 levels
+2025-03-24 12:36:34,601 - root - INFO - Successfully created plot with 1 traces
+2025-03-24 12:36:34,603 - werkzeug - INFO - 127.0.0.1 - - [24/Mar/2025 12:36:34] "POST /process_layer HTTP/1.1" 200 -
