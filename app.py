@@ -94,6 +94,7 @@ def create_point_cloud_plot(file_path, layer, intervals):
         # Load points from DXF
         processor = DXFProcessor(file_path)
         points = processor.extract_points_from_layer(layer)
+        print(f"Extracted {len(points)} points from layer '{layer}'")
         
         if not points:
             raise ValueError(f"No points found in layer: {layer}")
@@ -101,43 +102,54 @@ def create_point_cloud_plot(file_path, layer, intervals):
         # Create point cloud
         cloud = PointCloud()
         for point in points.values():
-            # Points from DXF processor are already Point3d objects
             cloud.add_point(point)
             
-        # Generate contours for selected intervals
-        contour_data = []
+        # Get z-value range to adjust intervals if needed
+        z_values = [p.z for p in points.values()]
+        z_min, z_max = min(z_values), max(z_values)
+        z_range = z_max - z_min
+        print(f"Z-value range: {z_min:.2f} to {z_max:.2f} (range: {z_range:.2f})")
+        
+        # Adjust intervals if the z-range is too large or too small
+        selected_intervals = []
         for interval, enabled in intervals.items():
             if enabled:
-                level_contours = cloud.get_contour_lines([float(interval)])
+                interval_val = float(interval)
+                # If z-range is large, scale up the intervals
+                if z_range > 100:
+                    interval_val *= (z_range / 100)
+                # If z-range is small, scale down the intervals
+                elif z_range < 1:
+                    interval_val *= z_range
+                selected_intervals.append(interval_val)
                 
-                # Validate contours
-                is_valid, error_msg = validate_contours(points, level_contours)
-                if not is_valid:
-                    raise ValueError(f"Invalid contours at {interval}m interval: {error_msg}")
-                
-                # Add contour lines to plot
-                for level, paths in level_contours.items():
-                    width = 1 if float(interval) == 0.25 else (2 if float(interval) == 0.5 else 3)
-                    color = 'orange' if float(interval) == 0.25 else ('green' if float(interval) == 0.5 else 'blue')
-                    opacity = 0.6 if float(interval) == 0.25 else (0.8 if float(interval) == 0.5 else 1.0)
-                    
-                    for path in paths:
-                        x, y = zip(*[(p[0], p[1]) for p in path])
-                        contour_data.append({
-                            'type': 'scatter',
-                            'x': list(x),
-                            'y': list(y),
-                            'mode': 'lines',
-                            'line': {'width': width, 'color': color},
-                            'opacity': opacity,
-                            'name': f'Contour {float(interval)}m',
-                            'showlegend': True
-                        })
+        print(f"Using intervals: {selected_intervals}")
         
-        # Create scatter plot of points
-        x = [point.x for point in points.values()]
-        y = [point.y for point in points.values()]
-        z = [point.z for point in points.values()]
+        # Generate contours
+        contour_data = []
+        if selected_intervals:
+            level_contours = cloud.get_contour_lines(selected_intervals)
+            print(f"Generated contours for {len(level_contours)} levels")
+            
+            # Add contour lines to plot
+            for level, paths in level_contours.items():
+                print(f"Processing level {level} with {len(paths)} paths")
+                for path in paths:
+                    x, y = zip(*[(p[0], p[1]) for p in path])
+                    contour_data.append({
+                        'type': 'scatter',
+                        'x': list(x),
+                        'y': list(y),
+                        'mode': 'lines',
+                        'line': {'width': 2, 'color': 'blue'},
+                        'name': f'Contour {level:.2f}m',
+                        'showlegend': True
+                    })
+        
+        # Create point data
+        x = [p.x for p in points.values()]
+        y = [p.y for p in points.values()]
+        z = [p.z for p in points.values()]
         
         point_data = {
             'type': 'scatter',
@@ -158,6 +170,7 @@ def create_point_cloud_plot(file_path, layer, intervals):
         
         # Combine point and contour data
         data = [point_data] + contour_data
+        print(f"Total traces: {len(data)} ({len(contour_data)} contours + 1 point cloud)")
         
         # Create layout
         layout = {
@@ -173,7 +186,7 @@ def create_point_cloud_plot(file_path, layer, intervals):
         return {'data': data, 'layout': layout}
         
     except Exception as e:
-        logger.error(f"Error creating plot: {str(e)}")
+        print(f"Error in create_point_cloud_plot: {str(e)}")
         raise
 
 @app.route('/')
@@ -217,6 +230,8 @@ def process_layer():
         layer = data.get('layer')
         intervals = data.get('intervals', {})
         
+        logging.info(f"Processing layer '{layer}' with intervals: {intervals}")
+        
         if not layer:
             return jsonify({'error': 'No layer selected'})
             
@@ -228,13 +243,22 @@ def process_layer():
             
         latest_file = max(dxf_files, key=lambda f: os.path.getctime(os.path.join(app.config['UPLOAD_FOLDER'], f)))
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], latest_file)
+        logging.info(f"Using DXF file: {file_path}")
         
         # Create plot
-        plot_data = create_point_cloud_plot(file_path, layer, intervals)
-        return jsonify(plot_data)
+        try:
+            plot_data = create_point_cloud_plot(file_path, layer, intervals)
+            logging.info(f"Successfully created plot with {len(plot_data['data'])} traces")
+            return jsonify(plot_data)
+        except Exception as e:
+            error_msg = f"Error creating plot: {str(e)}"
+            logging.error(error_msg)
+            return jsonify({'error': error_msg})
         
     except Exception as e:
-        return jsonify({'error': str(e)})
+        error_msg = f"Error processing layer: {str(e)}"
+        logging.error(error_msg)
+        return jsonify({'error': error_msg})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

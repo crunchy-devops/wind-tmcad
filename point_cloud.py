@@ -107,56 +107,66 @@ class PointCloud:
         
     def get_contour_lines(self, intervals: List[float] = None) -> Dict[float, List[List[List[float]]]]:
         """Generate contour lines at specified intervals."""
+        print(f"Starting contour generation with intervals: {intervals}")  # Debug print
+        
         if not self.points:
+            print("No points in point cloud")  # Debug print
             return {}
             
         if intervals is None:
             intervals = [0.25, 0.5, 1.0]
             
-        # Reset cached geometries
-        self._convex_hull = None
-        self._boundary_polygon = None
+        # Get point coordinates
+        points = np.array([(p.x, p.y, p.z) for p in self.points.values()])
+        x, y, z = points[:, 0], points[:, 1], points[:, 2]
+        print(f"Point cloud stats: {len(points)} points")  # Debug print
+        print(f"X range: [{x.min():.2f}, {x.max():.2f}]")  # Debug print
+        print(f"Y range: [{y.min():.2f}, {y.max():.2f}]")  # Debug print
+        print(f"Z range: [{z.min():.2f}, {z.max():.2f}]")  # Debug print
         
-        # Extract point coordinates
-        point_list = list(self.points.values())
-        x_coords = np.array([p.x for p in point_list])
-        y_coords = np.array([p.y for p in point_list])
-        z_values = np.array([p.z for p in point_list])
+        # Get data bounds
+        x_min, x_max = x.min(), x.max()
+        y_min, y_max = y.min(), y.max()
+        z_min, z_max = z.min(), z.max()
         
-        # Calculate grid bounds with padding
-        x_min, x_max = x_coords.min(), x_coords.max()
-        y_min, y_max = y_coords.min(), y_coords.max()
-        z_min, z_max = z_values.min(), z_values.max()
+        # Create a regular grid for interpolation
+        grid_size = max(50, min(200, len(points) // 2))  # Adjust grid size based on point count
+        xi = np.linspace(x_min, x_max, grid_size)
+        yi = np.linspace(y_min, y_max, grid_size)
+        xi, yi = np.meshgrid(xi, yi)
+        print(f"Created interpolation grid of size {grid_size}x{grid_size}")  # Debug print
         
-        padding = 0.05  # 5% padding
-        x_pad = (x_max - x_min) * padding
-        y_pad = (y_max - y_min) * padding
-        
-        # Create denser grid for better interpolation
-        grid_size = int(np.sqrt(len(point_list)) * 4)  # Increased density further
-        xi = np.linspace(x_min - x_pad, x_max + x_pad, grid_size)
-        yi = np.linspace(y_min - y_pad, y_max + y_pad, grid_size)
-        xi_mg, yi_mg = np.meshgrid(xi, yi)
-        
-        # Interpolate Z values using cubic interpolation
-        zi = griddata((x_coords, y_coords), z_values, (xi_mg, yi_mg), method='cubic')
-        
-        # Fill NaN values using nearest neighbor
+        # Interpolate z values on the grid
+        try:
+            zi = griddata((x, y), z, (xi, yi), method='cubic')
+            print("Completed cubic interpolation")  # Debug print
+        except Exception as e:
+            print(f"Error in cubic interpolation: {str(e)}")  # Debug print
+            return {}
+            
+        # Fill any NaN values using linear then nearest neighbor interpolation
         mask = np.isnan(zi)
         if mask.any():
-            zi[mask] = griddata(
-                (x_coords, y_coords), z_values, (xi_mg[mask], yi_mg[mask]), 
-                method='nearest'
-            )
+            print(f"Filling {np.sum(mask)} NaN values with linear interpolation")  # Debug print
+            zi_linear = griddata((x, y), z, (xi[mask], yi[mask]), method='linear')
+            zi[mask] = zi_linear
+            
+            # Fill any remaining NaNs with nearest neighbor
+            mask = np.isnan(zi)
+            if mask.any():
+                print(f"Filling {np.sum(mask)} remaining NaN values with nearest neighbor")  # Debug print
+                zi[mask] = griddata((x, y), z, (xi[mask], yi[mask]), method='nearest')
         
         # Generate contours
         contours = {}
         for interval in intervals:
-            min_level = math.ceil(z_min / interval) * interval
-            max_level = math.floor(z_max / interval) * interval
+            min_level = math.floor(z_min / interval) * interval
+            max_level = math.ceil(z_max / interval) * interval
             levels = np.arange(min_level, max_level + interval, interval)
+            print(f"Generating contours for interval {interval}, levels: {levels}")  # Debug print
             
             if len(levels) == 0:
+                print(f"No levels generated for interval {interval}")  # Debug print
                 continue
                 
             try:
@@ -167,6 +177,7 @@ class PointCloud:
                 for level_idx, level in enumerate(cs.levels):
                     level_contours = []
                     paths = cs.collections[level_idx].get_paths()
+                    print(f"Found {len(paths)} paths for level {level}")  # Debug print
                     
                     # Convert matplotlib paths to Shapely geometries
                     shapely_contours = []
@@ -177,6 +188,8 @@ class PointCloud:
                             fixed_contour = self._validate_and_fix_contour(contour, level)
                             if fixed_contour is not None:
                                 shapely_contours.append(fixed_contour)
+                    
+                    print(f"Created {len(shapely_contours)} valid Shapely contours")  # Debug print
                     
                     # Simplify and clean up contours
                     if shapely_contours:
@@ -190,6 +203,7 @@ class PointCloud:
                             
                         # Simplify and validate each part
                         simplified = self._simplify_contours(parts)
+                        print(f"Simplified to {len(simplified)} contours")  # Debug print
                         
                         # Convert back to coordinate lists
                         for contour in simplified:
@@ -199,9 +213,11 @@ class PointCloud:
                     
                     if level_contours:
                         contours[float(level)] = level_contours
+                        print(f"Added {len(level_contours)} contours for level {level}")  # Debug print
                         
             except Exception as e:
-                logging.warning(f"Error generating contours at interval {interval}: {str(e)}")
+                print(f"Error generating contours at interval {interval}: {str(e)}")  # Debug print
                 continue
         
+        print(f"Finished contour generation, generated contours for {len(contours)} levels")  # Debug print
         return contours
