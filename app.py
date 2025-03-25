@@ -3,6 +3,7 @@ from flask import Flask, render_template, jsonify, request
 from dxf_processor import DXFProcessor
 from point_cloud import PointCloud
 from point3d import Point3d
+from models import init_db, Session, Project, Point3D, Breakline, DelaunayTriangle, ContourLine
 import plotly.graph_objects as go
 import numpy as np
 import logging
@@ -24,6 +25,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+# Initialize database
+init_db()
 
 # Create uploads directory if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -266,6 +270,77 @@ def process_layer():
         error_msg = f"Error processing layer: {str(e)}"
         logging.error(error_msg)
         return jsonify({'error': error_msg})
+
+@app.route('/save_project', methods=['POST'])
+def save_project():
+    """Save the current point cloud data to the database."""
+    try:
+        data = request.get_json()
+        project_name = data.get('projectName')
+        points = data.get('points', [])
+        breaklines = data.get('breaklines', [])
+        triangles = data.get('triangles', [])
+        contours = data.get('contours', [])
+
+        session = Session()
+        
+        # Create new project
+        project = Project(name=project_name)
+        session.add(project)
+        session.flush()  # Get the project ID
+        
+        # Save points
+        point_map = {}  # Map original point IDs to database IDs
+        for point in points:
+            db_point = Point3D(
+                project_id=project.id,
+                x=point['x'],
+                y=point['y'],
+                z=point['z']
+            )
+            session.add(db_point)
+            session.flush()
+            point_map[point['id']] = db_point.id
+        
+        # Save breaklines
+        for breakline in breaklines:
+            db_breakline = Breakline(
+                project_id=project.id,
+                start_point3d_id=point_map[breakline['start']],
+                end_point3d_id=point_map[breakline['end']]
+            )
+            session.add(db_breakline)
+        
+        # Save triangles
+        for triangle in triangles:
+            db_triangle = DelaunayTriangle(
+                project_id=project.id,
+                point3d_id1=point_map[triangle['p1']],
+                point3d_id2=point_map[triangle['p2']],
+                point3d_id3=point_map[triangle['p3']]
+            )
+            session.add(db_triangle)
+        
+        # Save contour lines
+        for contour in contours:
+            db_contour = ContourLine(
+                project_id=project.id,
+                x=contour['x'],
+                y=contour['y'],
+                z=contour['z']
+            )
+            session.add(db_contour)
+        
+        session.commit()
+        return jsonify({'success': True, 'message': 'Project saved successfully'})
+        
+    except Exception as e:
+        logger.error(f"Error saving project: {str(e)}")
+        session.rollback()
+        return jsonify({'success': False, 'message': f'Error saving project: {str(e)}'}), 500
+    
+    finally:
+        session.close()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

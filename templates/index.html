@@ -44,6 +44,23 @@
             </div>
         </div>
 
+        <!-- Save Project Button -->
+        <div class="card mb-4" id="saveProjectCard" style="display: none;">
+            <div class="card-body">
+                <h5 class="card-title">Save Project</h5>
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="projectName" placeholder="Enter project name" required>
+                </div>
+                <button type="button" class="btn btn-success" onclick="saveProject()">Save Project</button>
+                <div class="alert alert-success mt-2" id="saveSuccess" style="display: none;">
+                    Project saved successfully!
+                </div>
+                <div class="alert alert-danger mt-2" id="saveError" style="display: none;">
+                    Error saving project. Please try again.
+                </div>
+            </div>
+        </div>
+
         <!-- Layer Selection Modal -->
         <div class="modal fade" id="layerModal" tabindex="-1">
             <div class="modal-dialog">
@@ -114,42 +131,85 @@
             const layerModal = new bootstrap.Modal(document.getElementById('layerModal'));
             
             // Handle file upload
-            document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            document.getElementById('uploadForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData();
                 const fileInput = document.getElementById('dxfFile');
                 formData.append('file', fileInput.files[0]);
                 
-                try {
-                    const response = await fetch('/get_layers', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
-                    
+                fetch('/get_layers', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
                     if (data.error) {
                         alert(data.error);
-                        return;
+                    } else {
+                        document.getElementById('saveProjectCard').style.display = 'block';
+                        // Populate layer select
+                        const layerSelect = document.getElementById('layerSelect');
+                        layerSelect.innerHTML = '';
+                        data.layers.forEach(layer => {
+                            const option = document.createElement('option');
+                            option.value = layer;
+                            option.textContent = layer;
+                            layerSelect.appendChild(option);
+                        });
+                        
+                        // Show layer selection modal
+                        layerModal.show();
                     }
-                    
-                    // Populate layer select
-                    const layerSelect = document.getElementById('layerSelect');
-                    layerSelect.innerHTML = '';
-                    data.layers.forEach(layer => {
-                        const option = document.createElement('option');
-                        option.value = layer;
-                        option.textContent = layer;
-                        layerSelect.appendChild(option);
-                    });
-                    
-                    // Show layer selection modal
-                    layerModal.show();
-                    
-                } catch (error) {
-                    alert('Error uploading file: ' + error.message);
-                }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error uploading file');
+                });
             });
-            
+
+            function saveProject() {
+                const projectName = document.getElementById('projectName').value.trim();
+                if (!projectName) {
+                    alert('Please enter a project name');
+                    return;
+                }
+
+                // Get current point cloud data from the visualization
+                const data = {
+                    projectName: projectName,
+                    points: window.currentPoints || [],
+                    breaklines: window.currentBreaklines || [],
+                    triangles: window.currentTriangles || [],
+                    contours: window.currentContours || []
+                };
+
+                fetch('/save_project', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('saveSuccess').style.display = 'block';
+                        document.getElementById('saveError').style.display = 'none';
+                        setTimeout(() => {
+                            document.getElementById('saveSuccess').style.display = 'none';
+                        }, 3000);
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('saveError').style.display = 'block';
+                    document.getElementById('saveSuccess').style.display = 'none';
+                    document.getElementById('saveError').textContent = error.message || 'Error saving project. Please try again.';
+                });
+            }
+
             // Handle layer processing
             document.getElementById('processLayer').addEventListener('click', async () => {
                 const layer = document.getElementById('layerSelect').value;

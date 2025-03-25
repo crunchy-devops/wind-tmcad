@@ -29,7 +29,7 @@ __all__ = ['PointCloud']
 class PointCloud:
     """A memory-efficient point cloud implementation with spatial indexing."""
     
-    __slots__ = ['points', '_kdtree', '_coords_array', '_triangulation', '_convex_hull', '_boundary_polygon']
+    __slots__ = ['points', '_kdtree', '_coords_array', '_triangulation', '_convex_hull', '_boundary_polygon', 'break_lines']
     
     def __init__(self):
         """Initialize an empty point cloud."""
@@ -39,6 +39,7 @@ class PointCloud:
         self._triangulation = None
         self._convex_hull = None
         self._boundary_polygon = None
+        self.break_lines: List[Tuple[int, int]] = []  # List of (start_point_id, end_point_id) tuples
         
     def add_point(self, point: Point3d) -> None:
         """Add a point to the point cloud.
@@ -232,3 +233,54 @@ class PointCloud:
         
         logger.debug(f"Finished contour generation, generated contours for {len(contours)} levels")  # Debug print
         return contours
+
+    def _get_kdtree(self) -> cKDTree:
+        """Get or create KD-tree for efficient nearest neighbor search.
+        
+        Returns:
+            KD-tree of point cloud
+        """
+        if self._kdtree is None:
+            # Create array of point coordinates
+            if self._coords_array is None:
+                points = list(self.points.values())
+                self._coords_array = np.array([[p.x, p.y] for p in points])
+            # Create KD-tree
+            self._kdtree = cKDTree(self._coords_array)
+        return self._kdtree
+
+    def interpolate_z_idw(self, x: float, y: float, k: int = 5, p: int = 2) -> float:
+        """Interpolate z value at (x,y) using Inverse Distance Weighting (IDW).
+        
+        Args:
+            x: x-coordinate
+            y: y-coordinate
+            k: number of nearest neighbors to use
+            p: power parameter for IDW
+            
+        Returns:
+            Interpolated z value
+            
+        Raises:
+            ValueError: If point is outside the convex hull of the point cloud
+        """
+        # Get k nearest neighbors
+        distances, indices = self._get_kdtree().query([x, y], k=k)
+        
+        # Check if point is too far from any existing points
+        if np.min(distances) > 100:  # Arbitrary threshold
+            raise ValueError("Point is too far from existing points")
+            
+        # Get z values of neighbors
+        z_values = np.array([list(self.points.values())[i].z for i in indices])
+        
+        # Handle exact matches
+        if np.any(distances == 0):
+            return z_values[distances == 0][0]
+            
+        # Calculate weights using inverse distance weighting
+        weights = 1 / (distances ** p)
+        weights /= np.sum(weights)  # Normalize weights
+        
+        # Calculate interpolated value
+        return np.sum(weights * z_values)
