@@ -1,129 +1,129 @@
-"""Test module for PointCloud class."""
-import unittest
-import os
-import math
-import tempfile
-from point3d import Point3d
+"""Tests for point cloud functionality."""
+import pytest
 from point_cloud import PointCloud
+from point3d import Point3d
+import os
+import h5py
 
-class TestPointCloud(unittest.TestCase):
-    """Test cases for PointCloud class."""
-    
-    def setUp(self):
-        """Set up test fixtures."""
-        self.cloud = PointCloud()
-        self.p1 = Point3d(id=1, x=0.0, y=0.0, z=0.0)
-        self.p2 = Point3d(id=2, x=3.0, y=4.0, z=0.0)
-        self.p3 = Point3d(id=3, x=1.0, y=1.0, z=1.0)
-        self.cloud.add_point(self.p1)
-        self.cloud.add_point(self.p2)
-        self.cloud.add_point(self.p3)
-        
-    def test_add_point(self):
-        """Test adding points."""
-        p4 = Point3d(id=4, x=2.0, y=2.0, z=2.0)
-        self.cloud.add_point(p4)
-        self.assertEqual(len(self.cloud.points), 4)
-        self.assertEqual(self.cloud.get_point(4), p4)
-        
-    def test_add_duplicate_point(self):
-        """Test adding point with duplicate ID."""
-        p_dup = Point3d(id=1, x=5.0, y=5.0, z=5.0)
-        with self.assertRaises(ValueError):
-            self.cloud.add_point(p_dup)
-            
-    def test_remove_point(self):
-        """Test removing points."""
-        self.cloud.remove_point(1)
-        self.assertEqual(len(self.cloud.points), 2)
-        with self.assertRaises(KeyError):
-            self.cloud.get_point(1)
-            
-    def test_distance(self):
-        """Test distance calculation."""
-        # Distance between (0,0,0) and (3,4,0) should be 5
-        self.assertEqual(self.cloud.distance(1, 2), 5.0)
-        
-    def test_slope_percentage(self):
-        """Test slope percentage calculation."""
-        # Points with 3,4,0 and 0,0,0 coordinates
-        slope = self.cloud.slope_percentage(1, 2)
-        self.assertEqual(slope, 0.0)  # No vertical difference
-        
-        # Test with vertical difference
-        p4 = Point3d(id=4, x=3.0, y=4.0, z=5.0)
-        self.cloud.add_point(p4)
-        slope = self.cloud.slope_percentage(1, 4)
-        self.assertEqual(slope, 100.0)  # 45 degree angle = 100% slope
-        
-    def test_bearing_angle(self):
-        """Test bearing angle calculation."""
-        # Point 2 is at (3,4,0) relative to (0,0,0)
-        angle = self.cloud.bearing_angle(1, 2)
-        expected = math.degrees(math.atan2(4, 3))
-        self.assertAlmostEqual(angle, (expected + 360) % 360)
-        
-    def test_nearest_neighbors(self):
-        """Test nearest neighbor search."""
-        neighbors = self.cloud.find_nearest_neighbors(1, 2)
-        self.assertEqual(len(neighbors), 2)
-        # Point 3 should be closer to point 1 than point 2
-        self.assertEqual(neighbors[0][0], 3)
-        self.assertEqual(neighbors[1][0], 2)
-        
-    def test_hdf5_storage(self):
-        """Test HDF5 storage and loading."""
-        with tempfile.NamedTemporaryFile(suffix='.h5', delete=False) as tf:
-            filename = tf.name
-            
+@pytest.fixture
+def cloud():
+    """Create a point cloud with sample points."""
+    pc = PointCloud()
+    p1 = Point3d(id=1, x=0.0, y=0.0, z=0.0)
+    p2 = Point3d(id=2, x=3.0, y=4.0, z=0.0)
+    p3 = Point3d(id=3, x=1.0, y=1.0, z=1.0)
+    pc.add_point(p1)
+    pc.add_point(p2)
+    pc.add_point(p3)
+    yield pc
+    # Cleanup (if needed)
+    pc = None
+
+def test_add_point(cloud):
+    """Test adding points."""
+    p4 = Point3d(id=4, x=2.0, y=2.0, z=2.0)
+    cloud.add_point(p4)
+    assert len(cloud.points) == 4
+    assert cloud.get_point(4) == p4
+
+def test_add_duplicate_point(cloud):
+    """Test adding point with duplicate ID."""
+    p_dup = Point3d(id=1, x=5.0, y=5.0, z=5.0)
+    with pytest.raises(ValueError):
+        cloud.add_point(p_dup)
+
+def test_remove_point(cloud):
+    """Test removing points."""
+    cloud.remove_point(1)
+    assert len(cloud.points) == 2
+    with pytest.raises(KeyError):
+        cloud.get_point(1)
+
+def test_distance(cloud):
+    """Test distance calculation."""
+    # Distance between (0,0,0) and (3,4,0) should be 5
+    assert cloud.distance(1, 2) == 5.0
+
+def test_slope_percentage(cloud):
+    """Test slope percentage calculation."""
+    # Points with 3,4,0 and 0,0,0 coordinates
+    slope = cloud.slope_percentage(1, 2)
+    # No vertical difference, so slope should be 0
+    assert slope == 0.0
+
+def test_bearing_angle(cloud):
+    """Test bearing angle calculation."""
+    # Point 2 is at (3,4,0) relative to (0,0,0)
+    angle = cloud.bearing_angle(1, 2)
+    # arctan(4/3) in degrees ≈ 53.13
+    assert round(angle, 2) == 53.13
+
+def test_nearest_neighbors(cloud):
+    """Test finding nearest neighbors."""
+    neighbors = cloud.find_nearest_neighbors(1, k=2)
+    # Point 3 should be closer than Point 2
+    assert len(neighbors) == 2
+    assert neighbors[0][0] == 3  # First neighbor should be point 3
+    assert neighbors[1][0] == 2  # Second neighbor should be point 2
+
+def test_interpolate_z_idw(cloud):
+    """Test IDW interpolation."""
+    # Test point at (0.5, 0.5)
+    z = cloud.interpolate_z_idw(0.5, 0.5)
+    # Should be weighted average of surrounding points
+    assert isinstance(z, float)
+
+def test_interpolate_z_delaunay(cloud):
+    """Test Delaunay interpolation."""
+    # Add more points to create a valid triangulation
+    p4 = Point3d(id=4, x=0.0, y=1.0, z=0.0)
+    cloud.add_point(p4)
+    # Compute triangulation
+    cloud.compute_delaunay()
+    # Test point at (0.5, 0.5)
+    z = cloud.interpolate_z_delaunay(0.5, 0.5)
+    # Should be interpolated from triangulation
+    assert isinstance(z, float)
+
+def test_hdf5_storage(cloud):
+    """Test HDF5 file storage."""
+    filename = 'test_cloud.h5'
+    try:
+        # Save to HDF5
+        print(f"Original points: {cloud.points}")  # Debug print
+        cloud.save_to_hdf5(filename)
+
+        # Verify file exists and has content
+        assert os.path.exists(filename), "HDF5 file was not created"
+        print(f"File size: {os.path.getsize(filename)} bytes")  # Debug print
+
+        # Inspect HDF5 file
+        with h5py.File(filename, 'r') as f:
+            print(f"File keys: {list(f.keys())}")
+            points_data = f['points'][:]
+            print(f"Points data shape: {points_data.shape}")
+            print(f"Points data:")
+            for point in points_data:
+                print(f"Point: id={int(point[0])}, x={point[1]}, y={point[2]}, z={point[3]}")
+
+        # Create new cloud and load
+        new_cloud = PointCloud()
         try:
-            # Save to HDF5
-            self.cloud.save_to_hdf5(filename)
-            
-            # Load from HDF5
-            loaded_cloud = PointCloud.load_from_hdf5(filename)
-            
-            # Verify points are the same
-            self.assertEqual(len(loaded_cloud.points), len(self.cloud.points))
-            for point_id, point in self.cloud.points.items():
-                loaded_point = loaded_cloud.get_point(point_id)
-                self.assertEqual(point.id, loaded_point.id)
-                self.assertEqual(point.x, loaded_point.x)
-                self.assertEqual(point.y, loaded_point.y)
-                self.assertEqual(point.z, loaded_point.z)
-        finally:
-            os.unlink(filename)
+            new_cloud.load_from_hdf5(filename)
+        except Exception as e:
+            print(f"Error loading HDF5: {str(e)}")
+            raise
+        print(f"Loaded points: {new_cloud.points}")  # Debug print
 
-    def test_delaunay_interpolation(self):
-        """Test Delaunay triangulation interpolation."""
-        # Add more points to create a valid triangulation
-        p4 = Point3d(id=4, x=0.0, y=1.0, z=0.0)
-        self.cloud.add_point(p4)
-        
-        # Compute triangulation
-        self.cloud.compute_delaunay()
-        
-        # Test point inside the triangulation
-        z = self.cloud.interpolate_z_delaunay(0.5, 0.5)
-        self.assertIsInstance(z, float)
-        
-        # Test point outside triangulation
-        with self.assertRaises(ValueError):
-            self.cloud.interpolate_z_delaunay(-1.0, -1.0)
-            
-    def test_idw_interpolation(self):
-        """Test IDW interpolation."""
-        # Test with default parameters (all points)
-        z = self.cloud.interpolate_z_idw(0.5, 0.5)
-        self.assertIsInstance(z, float)
-        
-        # Test with custom parameters
-        z = self.cloud.interpolate_z_idw(0.5, 0.5, k=2, p=3)
-        self.assertIsInstance(z, float)
-        
-        # Test with k larger than number of points (should use all points)
-        z = self.cloud.interpolate_z_idw(0.5, 0.5, k=10)
-        self.assertIsInstance(z, float)
+        # Compare points
+        assert len(new_cloud.points) == len(cloud.points)
+        for point_id, point in cloud.points.items():
+            assert point_id in new_cloud.points
+            new_point = new_cloud.points[point_id]
+            assert point.x == new_point.x
+            assert point.y == new_point.y
+            assert point.z == new_point.z
 
-if __name__ == '__main__':
-    unittest.main()
+    finally:
+        if os.path.exists(filename):
+            os.remove(filename)

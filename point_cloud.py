@@ -453,13 +453,52 @@ class PointCloud:
             filename: Path to save file
         """
         with h5py.File(filename, 'w') as f:
-            points_group = f.create_group('points')
-            for point_id, point in self.points.items():
-                point_group = points_group.create_group(str(point_id))
-                point_group.attrs['x'] = point.x
-                point_group.attrs['y'] = point.y
-                point_group.attrs['z'] = point.z
+            # Store points as a single dataset with id, x, y, z
+            points_data = np.array([[p.id, p.x, p.y, p.z] for p in self.points.values()])
+            f.create_dataset('points', data=points_data)
                 
+    def _load_from_hdf5(self, filename: str) -> None:
+        """Load point cloud from HDF5 file.
+        
+        Args:
+            filename: Path to load file
+            
+        Raises:
+            IOError: If file cannot be read
+        """
+        self.points.clear()
+        try:
+            with h5py.File(filename, 'r') as f:
+                logger.debug("HDF5 file opened successfully")  
+                logger.debug(f"File keys: {list(f.keys())}")  
+                points_data = f['points'][:]
+                logger.debug(f"Loading {len(points_data)} points")  
+                for point in points_data:
+                    point_id = int(point[0])
+                    x = float(point[1])
+                    y = float(point[2])
+                    z = float(point[3])
+                    self.points[point_id] = Point3d(id=point_id, x=x, y=y, z=z)
+                logger.debug(f"Loaded {len(self.points)} points")  
+        except Exception as e:
+            logger.error(f"Error loading HDF5 file: {str(e)}")  
+            raise
+
+    def compute_delaunay(self) -> None:
+        """Compute Delaunay triangulation of points."""
+        if not self.points:
+            return
+        if self._triangulation is None:
+            points = np.array([[p.x, p.y] for p in self.points.values()])
+            self._triangulation = Delaunay(points)
+            
+    def _get_convex_hull(self) -> ConvexHull:
+        """Get or compute convex hull of points."""
+        if self._convex_hull is None:
+            points = np.array([[p.x, p.y] for p in self.points.values()])
+            self._convex_hull = ConvexHull(points)
+        return self._convex_hull
+
     @classmethod
     def load_from_hdf5(cls, filename: str) -> 'PointCloud':
         """Load point cloud from HDF5 file.
@@ -476,37 +515,3 @@ class PointCloud:
         cloud = cls()
         cloud._load_from_hdf5(filename)
         return cloud
-
-    def _load_from_hdf5(self, filename: str) -> None:
-        """Load point cloud from HDF5 file.
-        
-        Args:
-            filename: Path to load file
-            
-        Raises:
-            IOError: If file cannot be read
-        """
-        self.points.clear()
-        with h5py.File(filename, 'r') as f:
-            points_group = f['points']
-            for point_id in points_group:
-                point_group = points_group[point_id]
-                x = point_group.attrs['x']
-                y = point_group.attrs['y']
-                z = point_group.attrs['z']
-                self.add_point(Point3d(id=int(point_id), x=x, y=y, z=z))
-                
-    def compute_delaunay(self) -> None:
-        """Compute Delaunay triangulation of points."""
-        if not self.points:
-            return
-        if self._triangulation is None:
-            points = np.array([[p.x, p.y] for p in self.points.values()])
-            self._triangulation = Delaunay(points)
-            
-    def _get_convex_hull(self) -> ConvexHull:
-        """Get or compute convex hull of points."""
-        if self._convex_hull is None:
-            points = np.array([[p.x, p.y] for p in self.points.values()])
-            self._convex_hull = ConvexHull(points)
-        return self._convex_hull
