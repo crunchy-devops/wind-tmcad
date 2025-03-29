@@ -37,9 +37,17 @@ class DXFProcessor:
             
         Returns:
             Dictionary mapping point IDs to Point3d objects
+            
+        Raises:
+            KeyError: If layer_name does not exist in the DXF file
         """
+        # Check if layer exists
+        if layer_name not in [layer.dxf.name for layer in self._doc.layers]:
+            raise KeyError(f"Layer '{layer_name}' not found in DXF file")
+            
         msp = self._doc.modelspace()
         point_id = 1
+        points = {}  # Local dictionary to store points
         
         # Filter TEXT entities from specified layer
         for text in msp.query('TEXT[layer=="{}"]'.format(layer_name)):
@@ -49,12 +57,13 @@ class DXFProcessor:
                 # Get z value from text content
                 z = float(text.dxf.text.strip())
                 
-                self._points[point_id] = Point3d(point_id, x, y, z)
+                points[point_id] = Point3d(point_id, x, y, z)
                 point_id += 1
             except (ValueError, AttributeError) as e:
                 print(f"Warning: Skipping invalid point data: {e}")
                 
-        return self._points
+        self._points.update(points)
+        return points
 
     def add_break_line(self, point_ids: List[int]) -> bool:
         """Add a break line defined by a sequence of point IDs.
@@ -65,8 +74,16 @@ class DXFProcessor:
         Returns:
             True if break line was added successfully, False otherwise
         """
+        # Validate input
+        if not point_ids or len(point_ids) < 2:
+            return False
+            
         # Validate all points exist
         if not all(pid in self._points for pid in point_ids):
+            return False
+            
+        # Check if break line already exists
+        if point_ids in self._break_lines:
             return False
             
         self._break_lines.append(point_ids)

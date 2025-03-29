@@ -1,6 +1,7 @@
 """Module providing an optimized 3D point class using slots and struct."""
 from dataclasses import dataclass
 import struct
+import math
 from typing import ClassVar
 
 __all__ = ['Point3d']
@@ -25,8 +26,20 @@ class Point3d:
     
     def __post_init__(self):
         """Validate the input values after initialization."""
-        if not isinstance(self.id, int) or self.id < 0:
-            raise ValueError("id must be a non-negative integer")
+        if not isinstance(self.id, int):
+            raise ValueError("id must be an integer")
+        if self.id <= 0:
+            raise ValueError("id must be a positive integer")
+            
+        # Convert coordinates to float if they're integers
+        object.__setattr__(self, 'x', float(self.x))
+        object.__setattr__(self, 'y', float(self.y))
+        object.__setattr__(self, 'z', float(self.z))
+        
+        # Check for invalid coordinates
+        for coord in (self.x, self.y, self.z):
+            if math.isnan(coord) or math.isinf(coord):
+                raise ValueError("Coordinates must be finite numbers")
         
     def pack(self) -> bytes:
         """Pack the point coordinates into a binary string using struct.
@@ -48,6 +61,20 @@ class Point3d:
         """
         id_, x, y, z = struct.unpack(cls._struct_format, data)
         return cls(id=id_, x=x, y=y, z=z)
+        
+    def distance_to(self, other: 'Point3d') -> float:
+        """Calculate Euclidean distance to another point.
+        
+        Args:
+            other: Point to calculate distance to
+            
+        Returns:
+            float: Euclidean distance between the points
+        """
+        dx = self.x - other.x
+        dy = self.y - other.y
+        dz = self.z - other.z
+        return math.sqrt(dx*dx + dy*dy + dz*dz)
     
     def __repr__(self) -> str:
         """Return string representation of the point."""

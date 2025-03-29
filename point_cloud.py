@@ -265,14 +265,15 @@ class PointCloud:
             ValueError: If point is outside the convex hull of the point cloud
         """
         # Get k nearest neighbors
-        distances, indices = self._get_kdtree().query([x, y], k=k)
+        distances, indices = self._get_kdtree().query([x, y], k=min(k, len(self.points)))
         
         # Check if point is too far from any existing points
         if np.min(distances) > 100:  # Arbitrary threshold
             raise ValueError("Point is too far from existing points")
             
         # Get z values of neighbors
-        z_values = np.array([list(self.points.values())[i].z for i in indices])
+        points_list = list(self.points.values())
+        z_values = np.array([points_list[i].z for i in indices])
         
         # Handle exact matches
         if np.any(distances == 0):
@@ -284,3 +285,228 @@ class PointCloud:
         
         # Calculate interpolated value
         return np.sum(weights * z_values)
+
+    def interpolate_z_delaunay(self, x: float, y: float) -> float:
+        """Interpolate z value at (x,y) using Delaunay triangulation.
+        
+        Args:
+            x: x-coordinate
+            y: y-coordinate
+            
+        Returns:
+            Interpolated z value
+            
+        Raises:
+            ValueError: If point is outside the triangulation
+        """
+        if self._triangulation is None:
+            self.compute_delaunay()
+            
+        if self._triangulation is None:
+            raise ValueError("No triangulation available")
+            
+        # Find the triangle containing the point
+        simplex = self._triangulation.find_simplex(np.array([[x, y]]))
+        if simplex < 0:
+            raise ValueError("Point is outside the triangulation")
+            
+        # Get the vertices of the triangle
+        vertices = self._triangulation.points[self._triangulation.simplices[simplex[0]]]
+        points_array = np.array([[p.x, p.y] for p in self.points.values()])
+        
+        # Find the indices of the vertices in our points list
+        vertex_indices = []
+        for vertex in vertices:
+            distances = np.sum((points_array - vertex) ** 2, axis=1)
+            vertex_indices.append(np.argmin(distances))
+            
+        # Get the z values of the vertices
+        points_list = list(self.points.values())
+        z_values = np.array([points_list[i].z for i in vertex_indices])
+        
+        # Calculate barycentric coordinates
+        b = self._triangulation.transform[simplex[0], :2].dot(np.array([x, y]) - self._triangulation.transform[simplex[0], 2])
+        weights = np.append(b, 1 - b.sum())
+        
+        # Calculate interpolated value
+        return np.sum(weights * z_values)
+        
+    def get_point(self, point_id: int) -> Point3d:
+        """Get a point by its ID.
+        
+        Args:
+            point_id: ID of the point to retrieve
+            
+        Returns:
+            Point3d object with the given ID
+            
+        Raises:
+            KeyError: If point with given ID does not exist
+        """
+        if point_id not in self.points:
+            raise KeyError(f"Point with ID {point_id} does not exist")
+        return self.points[point_id]
+        
+    def remove_point(self, point_id: int) -> None:
+        """Remove a point from the point cloud.
+        
+        Args:
+            point_id: ID of the point to remove
+            
+        Raises:
+            KeyError: If point with given ID does not exist
+        """
+        if point_id not in self.points:
+            raise KeyError(f"Point with ID {point_id} does not exist")
+        del self.points[point_id]
+        # Reset cached data structures
+        self._kdtree = None
+        self._coords_array = None
+        self._triangulation = None
+        self._convex_hull = None
+        self._boundary_polygon = None
+        
+    def distance(self, point_id1: int, point_id2: int) -> float:
+        """Calculate Euclidean distance between two points.
+        
+        Args:
+            point_id1: ID of first point
+            point_id2: ID of second point
+            
+        Returns:
+            Distance between the points
+            
+        Raises:
+            KeyError: If either point ID does not exist
+        """
+        p1 = self.get_point(point_id1)
+        p2 = self.get_point(point_id2)
+        return math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2 + (p2.z - p1.z)**2)
+        
+    def bearing_angle(self, point_id1: int, point_id2: int) -> float:
+        """Calculate bearing angle between two points.
+        
+        Args:
+            point_id1: ID of first point
+            point_id2: ID of second point
+            
+        Returns:
+            Bearing angle in degrees (0-360)
+            
+        Raises:
+            KeyError: If either point ID does not exist
+        """
+        p1 = self.get_point(point_id1)
+        p2 = self.get_point(point_id2)
+        dx = p2.x - p1.x
+        dy = p2.y - p1.y
+        angle = math.degrees(math.atan2(dy, dx))
+        return (angle + 360) % 360
+        
+    def find_nearest_neighbors(self, point_id: int, k: int) -> List[Tuple[int, float]]:
+        """Find k nearest neighbors to a point.
+        
+        Args:
+            point_id: ID of the point to find neighbors for
+            k: Number of neighbors to find
+            
+        Returns:
+            List of tuples (point_id, distance) of nearest neighbors
+            
+        Raises:
+            KeyError: If point ID does not exist
+            ValueError: If k is greater than number of points
+        """
+        if k > len(self.points) - 1:  # -1 because we exclude the query point
+            raise ValueError(f"k ({k}) cannot be greater than number of points - 1 ({len(self.points) - 1})")
+        point = self.get_point(point_id)
+        distances, indices = self._get_kdtree().query([point.x, point.y], k=k+1)  # k+1 because point itself is included
+        # Convert indices to point IDs and pair with distances, excluding the query point itself
+        point_ids = list(self.points.keys())
+        return [(point_ids[i], d) for i, d in zip(indices[1:], distances[1:])]
+        
+    def slope_percentage(self, point_id1: int, point_id2: int) -> float:
+        """Calculate slope percentage between two points.
+        
+        Args:
+            point_id1: ID of first point
+            point_id2: ID of second point
+            
+        Returns:
+            Slope percentage
+            
+        Raises:
+            KeyError: If either point ID does not exist
+        """
+        p1 = self.get_point(point_id1)
+        p2 = self.get_point(point_id2)
+        dz = p2.z - p1.z
+        dxy = math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2)
+        if dxy == 0:
+            return float('inf') if dz > 0 else float('-inf')
+        return (dz / dxy) * 100
+        
+    def save_to_hdf5(self, filename: str) -> None:
+        """Save point cloud to HDF5 file.
+        
+        Args:
+            filename: Path to save file
+        """
+        with h5py.File(filename, 'w') as f:
+            points_group = f.create_group('points')
+            for point_id, point in self.points.items():
+                point_group = points_group.create_group(str(point_id))
+                point_group.attrs['x'] = point.x
+                point_group.attrs['y'] = point.y
+                point_group.attrs['z'] = point.z
+                
+    @classmethod
+    def load_from_hdf5(cls, filename: str) -> 'PointCloud':
+        """Load point cloud from HDF5 file.
+        
+        Args:
+            filename: Path to load file
+            
+        Returns:
+            New PointCloud instance loaded from file
+            
+        Raises:
+            IOError: If file cannot be read
+        """
+        cloud = cls()
+        cloud._load_from_hdf5(filename)
+        return cloud
+
+    def _load_from_hdf5(self, filename: str) -> None:
+        """Load point cloud from HDF5 file.
+        
+        Args:
+            filename: Path to load file
+            
+        Raises:
+            IOError: If file cannot be read
+        """
+        self.points.clear()
+        with h5py.File(filename, 'r') as f:
+            points_group = f['points']
+            for point_id in points_group:
+                point_group = points_group[point_id]
+                x = point_group.attrs['x']
+                y = point_group.attrs['y']
+                z = point_group.attrs['z']
+                self.add_point(Point3d(id=int(point_id), x=x, y=y, z=z))
+                
+    def compute_delaunay(self) -> None:
+        """Compute Delaunay triangulation of points."""
+        if not self.points:
+            return
+        if self._triangulation is None:
+            points = np.array([[p.x, p.y] for p in self.points.values()])
+            self._triangulation = Delaunay(points)
+            
+    def _get_convex_hull(self) -> ConvexHull:
+        """Get or compute convex hull of points."""
+        if self._convex_hull is None:
+            points = np.array([[p.x, p.y] for p in self.points.values()])
+            self._convex_hull = ConvexHull(points)
+        return self._convex_hull

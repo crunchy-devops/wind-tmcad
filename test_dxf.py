@@ -1,40 +1,52 @@
-"""Test script to check DXF file contents."""
+"""Test module for DXF file handling."""
 import os
+import unittest
 import ezdxf
 from dxf_processor import DXFProcessor
 
-def main():
-    """Main function to test DXF file."""
-    dxf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'plan-masse.dxf')
-    print(f"DXF file path: {dxf_path}")
-    print(f"File exists: {os.path.exists(dxf_path)}")
+class TestDXF(unittest.TestCase):
+    """Test cases for DXF file handling."""
     
-    try:
-        # Try to read the DXF file directly with ezdxf
-        doc = ezdxf.readfile(dxf_path)
-        print("\nLayers in DXF file:")
-        for layer in doc.layers:
-            print(f"- {layer.dxf.name}")
-            
-        # Try to read points using our processor
-        print("\nTrying DXFProcessor:")
-        processor = DXFProcessor(dxf_path)
-        layers = processor.get_layers()
-        print(f"Available layers: {layers}")
+    def setUp(self):
+        """Set up test fixtures."""
+        self.dxf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'project.dxf')
+        self.assertTrue(os.path.exists(self.dxf_path), "DXF test file not found")
         
-        # Try to extract points from each layer
+    def test_file_readable(self):
+        """Test that DXF file is readable."""
+        doc = ezdxf.readfile(self.dxf_path)
+        self.assertIsNotNone(doc)
+        
+    def test_layers_exist(self):
+        """Test that DXF file contains layers."""
+        doc = ezdxf.readfile(self.dxf_path)
+        layers = [layer.dxf.name for layer in doc.layers]
+        self.assertGreater(len(layers), 0)
+        
+    def test_processor_integration(self):
+        """Test DXFProcessor integration."""
+        processor = DXFProcessor(self.dxf_path)
+        layers = processor.get_layers()
+        self.assertIsInstance(layers, list)
+        self.assertGreater(len(layers), 0)
+        
+    def test_point_extraction(self):
+        """Test point extraction from layers."""
+        processor = DXFProcessor(self.dxf_path)
+        layers = processor.get_layers()
+        
         for layer in layers:
-            try:
-                points = processor.extract_points_from_layer(layer)
-                print(f"\nLayer '{layer}': {len(points)} points found")
-                if points:
-                    point = next(iter(points.values()))
-                    print(f"Sample point: {point}")
-            except Exception as e:
-                print(f"Error processing layer '{layer}': {e}")
-                
-    except Exception as e:
-        print(f"Error: {e}")
+            with self.subTest(layer=layer):
+                try:
+                    points = processor.extract_points_from_layer(layer)
+                    if points:  # Some layers might not have points
+                        self.assertIsInstance(points, dict)
+                        point = next(iter(points.values()))
+                        self.assertIsInstance(point.x, float)
+                        self.assertIsInstance(point.y, float)
+                        self.assertIsInstance(point.z, float)
+                except Exception as e:
+                    self.fail(f"Error processing layer '{layer}': {e}")
 
 if __name__ == '__main__':
-    main()
+    unittest.main()
