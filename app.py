@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request
 from dxf_processor import DXFProcessor
 from point_cloud import PointCloud
 from point3d import Point3d
-from models import init_db, Session, Project, Point3D, Breakline, DelaunayTriangle, ContourLine
+from models import init_db, Session, Project, PointCloud as DBPointCloud, Breakline, DelaunayTriangle, ContourLine
 import plotly.graph_objects as go
 import numpy as np
 import logging
@@ -292,7 +292,7 @@ def save_project():
         # Save points
         point_map = {}  # Map original point IDs to database IDs
         for point in points:
-            db_point = Point3D(
+            db_point = DBPointCloud(
                 project_id=project.id,
                 x=point['x'],
                 y=point['y'],
@@ -301,7 +301,7 @@ def save_project():
             session.add(db_point)
             session.flush()
             point_map[point['id']] = db_point.id
-        
+            
         # Save breaklines
         for breakline in breaklines:
             db_breakline = Breakline(
@@ -310,7 +310,7 @@ def save_project():
                 end_point3d_id=point_map[breakline['end']]
             )
             session.add(db_breakline)
-        
+            
         # Save triangles
         for triangle in triangles:
             db_triangle = DelaunayTriangle(
@@ -320,7 +320,7 @@ def save_project():
                 point3d_id3=point_map[triangle['p3']]
             )
             session.add(db_triangle)
-        
+            
         # Save contour lines
         for contour in contours:
             db_contour = ContourLine(
@@ -330,17 +330,17 @@ def save_project():
                 z=contour['z']
             )
             session.add(db_contour)
-        
+            
         session.commit()
         return jsonify({'success': True, 'message': 'Project saved successfully'})
         
     except Exception as e:
-        logger.error(f"Error saving project: {str(e)}")
-        session.rollback()
-        return jsonify({'success': False, 'message': f'Error saving project: {str(e)}'}), 500
-    
+        if session:
+            session.rollback()
+        return jsonify({'error': str(e)})
     finally:
-        session.close()
+        if session:
+            session.close()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
