@@ -469,20 +469,16 @@ class PointCloud:
         self.points.clear()
         try:
             with h5py.File(filename, 'r') as f:
-                logger.debug("HDF5 file opened successfully")  
-                logger.debug(f"File keys: {list(f.keys())}")  
                 points_data = f['points'][:]
-                logger.debug(f"Loading {len(points_data)} points")  
                 for point in points_data:
                     point_id = int(point[0])
                     x = float(point[1])
                     y = float(point[2])
                     z = float(point[3])
-                    self.points[point_id] = Point3d(id=point_id, x=x, y=y, z=z)
-                logger.debug(f"Loaded {len(self.points)} points")  
+                    point3d = Point3d(id=point_id, x=x, y=y, z=z)
+                    self.points[point_id] = point3d
         except Exception as e:
-            logger.error(f"Error loading HDF5 file: {str(e)}")  
-            raise
+            raise IOError(f"Error loading HDF5 file: {str(e)}")
 
     def compute_delaunay(self) -> None:
         """Compute Delaunay triangulation of points."""

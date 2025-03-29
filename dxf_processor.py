@@ -75,7 +75,11 @@ class DXFProcessor:
             True if break line was added successfully, False otherwise
         """
         # Validate input
-        if not point_ids or len(point_ids) < 2:
+        if not point_ids or not isinstance(point_ids, list) or len(point_ids) < 2:
+            return False
+            
+        # Check for duplicate points
+        if len(set(point_ids)) != len(point_ids):
             return False
             
         # Validate all points exist
@@ -103,4 +107,6 @@ class DXFProcessor:
         Returns:
             Nx3 numpy array of points
         """
+        if not self._points:
+            return np.zeros((0, 3))  # Empty array with correct shape
         return np.array([[p.x, p.y, p.z] for p in self._points.values()])

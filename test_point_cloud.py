@@ -106,13 +106,8 @@ def test_hdf5_storage(cloud):
             for point in points_data:
                 print(f"Point: id={int(point[0])}, x={point[1]}, y={point[2]}, z={point[3]}")
 
-        # Create new cloud and load
-        new_cloud = PointCloud()
-        try:
-            new_cloud.load_from_hdf5(filename)
-        except Exception as e:
-            print(f"Error loading HDF5: {str(e)}")
-            raise
+        # Load into new cloud using class method
+        new_cloud = PointCloud.load_from_hdf5(filename)
         print(f"Loaded points: {new_cloud.points}")  # Debug print
 
         # Compare points
